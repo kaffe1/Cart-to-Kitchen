@@ -46,12 +46,13 @@ export function useStorePresenter() {
     setMessage(null);
     if (!canAfford(snapshot.cart, ingredients, snapshot.wallet.balanceSek, ingredientId)) {
       setError('That item would take you over your available balance.');
-      return;
+      return false;
     }
     const current = snapshot.cart.find((line) => line.ingredientId === ingredientId)?.quantity ?? 0;
     await setCartQuantity(ingredientId, current + 1);
     const item = ingredients.find((candidate) => candidate.id === ingredientId);
     setMessage(`${item?.name ?? 'Item'} added to your cart.`);
+    return true;
   }
 
   async function changeQuantity(ingredientId: string, quantity: number) {

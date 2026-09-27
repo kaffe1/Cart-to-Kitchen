@@ -168,7 +168,7 @@ export function DesignSystemPage() {
             <SectionHeader kicker="01 · Foundations" title="Design principles" description="The visual system should make a practical shopping tool feel warm, legible and confidently playful." />
             <div className="ds-principle-grid">
               <article><Palette /><b>Warm, not clinical</b><p>Paper-like surfaces and food colors replace cold dashboard neutrals.</p></article>
-              <article><MousePointer2 /><b>Tactile, not ornamental</b><p>Offset shadows and asymmetric corners signal interactive hierarchy.</p></article>
+              <article><MousePointer2 /><b>Tactile, not ornamental</b><p>Offset shadows and consistent rounded corners signal interactive hierarchy.</p></article>
               <article><LayoutGrid /><b>Dense, not crowded</b><p>Compact controls keep shopping information visible without losing rhythm.</p></article>
               <article><Accessibility /><b>Expressive and usable</b><p>Color never carries meaning alone; labels, icons and focus states stay explicit.</p></article>
             </div>
@@ -205,14 +205,14 @@ export function DesignSystemPage() {
           </section>
 
           <section id="spacing-shape" className="ds-section">
-            <SectionHeader kicker="04 · Foundations" title="Spacing, radius and elevation" description="A 4px base rhythm supports compact controls and spacious page composition. Large feature cards use an asymmetric bottom-right corner." />
+            <SectionHeader kicker="04 · Foundations" title="Spacing, radius and elevation" description="A 4px base rhythm supports compact controls and spacious page composition. Rounded rectangles use the same radius on all four corners." />
             <h3 className="ds-subheading">Working spacing scale</h3>
             <div className="ds-spacing-scale">{spacingScale.map((space) => <div key={space}><span style={{ width: `${space}px` }} /><code>{space}px</code></div>)}</div>
             <h3 className="ds-subheading">Tailwind radius tokens</h3>
             <div className="ds-radius-grid">
               {radii.map((radius) => <article key={radius.name}><span style={{ borderRadius: radius.value }} /><b>radius-{radius.name}</b><code>{radius.value}</code></article>)}
               <article><span className="ds-radius-pill" /><b>pill</b><code>999px</code></article>
-              <article><span className="ds-radius-brand" /><b>brand card</b><code>28 / 28 / 12 / 28</code></article>
+              <article><span className="ds-radius-brand" /><b>brand card</b><code>28px</code></article>
             </div>
             <h3 className="ds-subheading">Elevation recipes</h3>
             <div className="ds-elevation-grid">
