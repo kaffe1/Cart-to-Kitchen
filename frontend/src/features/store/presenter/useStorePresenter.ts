@@ -27,6 +27,7 @@ export function useStorePresenter() {
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<"3d" | "grid">("3d");
   const [message, setMessage] = useState<string | null>(null);
+  const [messageKind, setMessageKind] = useState<"cart-add" | "checkout" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,6 +58,7 @@ export function useStorePresenter() {
   async function addToCart(ingredientId: string) {
     setError(null);
     setMessage(null);
+    setMessageKind(null);
     if (
       !canAfford(
         snapshot.cart,
@@ -74,6 +76,7 @@ export function useStorePresenter() {
     await setCartQuantity(ingredientId, current + 1);
     const item = ingredients.find((candidate) => candidate.id === ingredientId);
     setMessage(`${item?.name ?? "Item"} added to your cart.`);
+    setMessageKind("cart-add");
     return true;
   }
 
@@ -102,11 +105,13 @@ export function useStorePresenter() {
     setIsCheckingOut(true);
     setError(null);
     setMessage(null);
+    setMessageKind(null);
     try {
       const result = await checkout();
       setMessage(
         `Purchase complete: ${result.purchasedUnits} item(s) moved to your kitchen.`,
       );
+      setMessageKind("checkout");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Checkout failed.");
     } finally {
@@ -127,6 +132,7 @@ export function useStorePresenter() {
     isCheckingOut,
     cartTotal,
     message,
+    messageKind,
     error,
     setSelectedIngredientId,
     setCategory,

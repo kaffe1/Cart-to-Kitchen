@@ -1,28 +1,28 @@
-import { Grid2X2, Search, Sparkles, View } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Badge } from '@/shared/components/ui/badge';
-import { Button } from '@/shared/components/ui/button';
-import { FeedbackBanner } from '@/shared/components/ui/FeedbackBanner';
-import { Input } from '@/shared/components/ui/input';
-import { Skeleton } from '@/shared/components/ui/skeleton';
-import { useStorePresenter } from '../presenter/useStorePresenter';
-import type { IngredientCategory } from '../model/store.types';
-import { CartPanel } from './components/CartPanel';
-import { IngredientCard } from './components/IngredientCard';
-import { Store3DExperience } from './components/Store3DExperience';
+import { Grid2X2, Search, Sparkles, View } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
+import { FeedbackBanner } from "@/shared/components/ui/FeedbackBanner";
+import { Input } from "@/shared/components/ui/input";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import { useStorePresenter } from "../presenter/useStorePresenter";
+import type { IngredientCategory } from "../model/store.types";
+import { CartPanel } from "./components/CartPanel";
+import { IngredientCard } from "./components/IngredientCard";
+import { Store3DExperience } from "./components/Store3DExperience";
 
-const categories: Array<IngredientCategory | 'All'> = [
-  'All',
-  'Vegetables & Fruits',
-  'Meat & Seafood',
-  'Dairy & Eggs',
-  'Grains & Staples',
-  'Other Ingredients',
+const categories: Array<IngredientCategory | "All"> = [
+  "All",
+  "Vegetables & Fruits",
+  "Meat & Seafood",
+  "Dairy & Eggs",
+  "Grains & Staples",
+  "Other Ingredients",
 ];
 
 interface StoreToastProps {
   message: string;
-  tone: 'success' | 'error';
+  tone: "success" | "error";
 }
 
 function StoreToast({ message, tone }: StoreToastProps) {
@@ -35,7 +35,7 @@ function StoreToast({ message, tone }: StoreToastProps) {
 
   return (
     <div
-      className={isVisible ? 'store-toast visible' : 'store-toast'}
+      className={isVisible ? "store-toast visible" : "store-toast"}
       aria-live="polite"
     >
       <FeedbackBanner tone={tone}>{message}</FeedbackBanner>
@@ -45,28 +45,32 @@ function StoreToast({ message, tone }: StoreToastProps) {
 
 export function StorePage() {
   const presenter = useStorePresenter();
-  const toastMessage = presenter.error ?? presenter.message;
+  const toastMessage =
+    presenter.error ??
+    (presenter.viewMode === "3d" && presenter.messageKind === "cart-add"
+      ? null
+      : presenter.message);
 
   return (
     <div
       className={
-        presenter.viewMode === '3d'
-          ? 'page-shell store-page store-page-3d'
-          : 'page-shell store-page'
+        presenter.viewMode === "3d"
+          ? "page-shell store-page store-page-3d"
+          : "page-shell store-page"
       }
     >
       <div className="store-view-toggle view-switch" aria-label="Store view">
         <Button
-          variant={presenter.viewMode === '3d' ? 'default' : 'outline'}
+          variant={presenter.viewMode === "3d" ? "default" : "outline"}
           size="sm"
-          onClick={() => presenter.setViewMode('3d')}
+          onClick={() => presenter.setViewMode("3d")}
         >
           <View size={16} /> 3D store
         </Button>
         <Button
-          variant={presenter.viewMode === 'grid' ? 'default' : 'outline'}
+          variant={presenter.viewMode === "grid" ? "default" : "outline"}
           size="sm"
-          onClick={() => presenter.setViewMode('grid')}
+          onClick={() => presenter.setViewMode("grid")}
         >
           <Grid2X2 size={16} /> 2D list
         </Button>
@@ -74,13 +78,13 @@ export function StorePage() {
 
       {toastMessage && (
         <StoreToast
-          key={`${presenter.error ? 'error' : 'success'}:${toastMessage}`}
+          key={`${presenter.error ? "error" : "success"}:${toastMessage}`}
           message={toastMessage}
-          tone={presenter.error ? 'error' : 'success'}
+          tone={presenter.error ? "error" : "success"}
         />
       )}
 
-      {presenter.viewMode === '3d' ? (
+      {presenter.viewMode === "3d" ? (
         <Store3DExperience
           ingredients={presenter.ingredients}
           cart={presenter.cart}
@@ -100,10 +104,10 @@ export function StorePage() {
                 <Sparkles size={14} /> Today’s market run
               </span>
               <h1>Choose well. Cook more.</h1>
-              <p>
+              {/* <p>
                 Shop within your wallet, then turn every choice into
                 possibilities in your kitchen.
-              </p>
+              </p> */}
             </div>
             <div className="decision-card">
               <span>Wallet rule</span>
@@ -138,8 +142,8 @@ export function StorePage() {
                     type="button"
                     className={
                       presenter.category === item
-                        ? 'category-pill active'
-                        : 'category-pill'
+                        ? "category-pill active"
+                        : "category-pill"
                     }
                     onClick={() => presenter.setCategory(item)}
                   >
@@ -152,8 +156,8 @@ export function StorePage() {
                 <div>
                   <span className="eyebrow">Aisle catalogue</span>
                   <h2>
-                    {presenter.category === 'All'
-                      ? 'All ingredients'
+                    {presenter.category === "All"
+                      ? "All ingredients"
                       : presenter.category}
                   </h2>
                 </div>

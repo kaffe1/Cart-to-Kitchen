@@ -1,5 +1,5 @@
 import { PointerLockControls } from '@react-three/drei';
-import type { ComponentRef, RefObject } from 'react';
+import { Suspense, type ComponentRef, type RefObject } from 'react';
 import { formatSek } from '@/shared/utils/format';
 import type { Ingredient } from '../../model/store.types';
 import { FirstPersonController } from './controls/FirstPersonController';
@@ -15,6 +15,8 @@ import {
   getSectionProducts,
 } from './layout/storeLayout';
 import { ProductShape } from './products/ProductShape';
+import { FlyingIngredient } from './products/FlyingIngredient';
+import type { CartFlight } from './products/cartFlight';
 
 export type LockControls = ComponentRef<typeof PointerLockControls>;
 interface MarketSceneProps {
@@ -27,6 +29,8 @@ interface MarketSceneProps {
   onExplorationStart: () => void;
   onExplorationEnd: () => void;
   controlsRef: RefObject<LockControls | null>;
+  flights: readonly CartFlight[];
+  onFlightComplete: (token: number) => void;
 }
 
 export function MarketScene({
@@ -39,6 +43,8 @@ export function MarketScene({
   onExplorationStart,
   onExplorationEnd,
   controlsRef,
+  flights,
+  onFlightComplete,
 }: MarketSceneProps) {
   return (
     <>
@@ -84,6 +90,16 @@ export function MarketScene({
         onFocusChange={onFocusChange}
         onAdd={onAdd}
       />
+      {flights.map((flight) => (
+        <Suspense key={flight.token} fallback={null}>
+          <FlyingIngredient
+            ingredient={flight.ingredient}
+            kind={flight.kind}
+            target={flight.target}
+            onComplete={() => onFlightComplete(flight.token)}
+          />
+        </Suspense>
+      ))}
       <PointerLockControls
         ref={controlsRef}
         makeDefault

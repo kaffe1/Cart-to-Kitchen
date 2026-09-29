@@ -12,8 +12,9 @@ import { Button } from '@/shared/components/ui/button';
 import type { Ingredient } from '../../model/store.types';
 import type { ShoppingMode } from './controls/shoppingSession';
 import { STORE_CAMERA_FOV } from './layout/storeAppearance';
-import { STORE_ENTRANCE } from './layout/storeLayout';
+import { STORE_ENTRANCE, STORE_SECTIONS } from './layout/storeLayout';
 import { MarketScene, type LockControls } from './MarketScene';
+import type { CartFlight } from './products/cartFlight';
 
 interface StoreCanvasProps {
   ref?: Ref<StoreCanvasHandle>;
@@ -22,6 +23,7 @@ interface StoreCanvasProps {
   onAdd: (ingredientId: string) => Promise<boolean>;
   onExplorationChange?: (active: boolean) => void;
   onResume: () => void;
+  onFlightLanded?: () => void;
 }
 
 export interface StoreCanvasHandle {
@@ -36,10 +38,14 @@ export function StoreCanvas({
   onAdd,
   onExplorationChange,
   onResume,
+  onFlightLanded,
 }: StoreCanvasProps) {
   const { active: isLoadingModels, progress } = useProgress();
   const isExploring = mode === 'shopping';
   const controlsRef = useRef<LockControls>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const flightSequence = useRef(0);
+  const [flights, setFlights] = useState<CartFlight[]>([]);
   useImperativeHandle(
     ref,
     () => ({
@@ -57,12 +63,52 @@ export function StoreCanvas({
     async (ingredientId: string) => {
       const added = await onAdd(ingredientId);
       if (!added) return;
+      const section = STORE_SECTIONS.find((candidate) =>
+        candidate.ingredientIds.includes(ingredientId),
+      );
+      const ingredient = ingredients.find((item) => item.id === ingredientId);
+      if (section && ingredient && canvasRef.current) {
+        const canvasRect = canvasRef.current.getBoundingClientRect();
+        const basketRect = document
+          .getElementById('store-3d-basket-target')
+          ?.getBoundingClientRect();
+        const target: readonly [number, number] = basketRect
+          ? [
+              ((basketRect.left + basketRect.width / 2 - canvasRect.left) /
+                canvasRect.width) *
+                2 -
+                1,
+              1 -
+                ((basketRect.top + basketRect.height / 2 - canvasRect.top) /
+                  canvasRect.height) *
+                  2,
+            ]
+          : [0.9, 0.88];
+        setFlights((current) => [
+          ...current,
+          {
+            token: ++flightSequence.current,
+            ingredient,
+            kind: section.kind,
+            target,
+          },
+        ]);
+      }
       setAddFeedback((current) => ({
         ingredientId,
         sequence: current.sequence + 1,
       }));
     },
-    [onAdd],
+    [onAdd, ingredients],
+  );
+  const finishFlight = useCallback(
+    (token: number) => {
+      setFlights((current) =>
+        current.filter((flight) => flight.token !== token),
+      );
+      onFlightLanded?.();
+    },
+    [onFlightLanded],
   );
   const startExploring = useCallback(() => {
     onExplorationChange?.(true);
@@ -73,12 +119,16 @@ export function StoreCanvas({
   }, [onExplorationChange]);
 
   return (
-    <div className="store-canvas" aria-label="Interactive 3D grocery store">
+    <div
+      ref={canvasRef}
+      className="store-canvas"
+      aria-label="Interactive 3D grocery store"
+    >
       <Suspense
         fallback={<div className="canvas-loading">Stocking the shelves…</div>}
       >
         <Canvas
-          frameloop={isExploring ? 'always' : 'demand'}
+          frameloop={isExploring || flights.length > 0 ? 'always' : 'demand'}
           shadows="percentage"
           dpr={[1, 1.5]}
           camera={{
@@ -99,6 +149,8 @@ export function StoreCanvas({
             onExplorationStart={startExploring}
             onExplorationEnd={stopExploring}
             controlsRef={controlsRef}
+            flights={flights}
+            onFlightComplete={finishFlight}
           />
         </Canvas>
       </Suspense>

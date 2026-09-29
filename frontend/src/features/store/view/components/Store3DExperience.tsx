@@ -1,5 +1,5 @@
 import { ShoppingBasket } from 'lucide-react';
-import { useCallback, useEffect, useReducer, useRef } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import type {
   CartLine,
@@ -7,6 +7,7 @@ import type {
   ShoppingListItem,
   Wallet,
 } from '../../model/store.types';
+import { getCartUnits } from '../../model/store.rules';
 import { isTypingTarget } from '../scene/controls/keyboard';
 import { StoreCanvas, type StoreCanvasHandle } from '../scene/StoreCanvas';
 import {
@@ -41,6 +42,8 @@ export function Store3DExperience({
   const [mode, dispatch] = useReducer(shoppingSessionReducer, 'entry');
   const canvasRef = useRef<StoreCanvasHandle>(null);
   const isCartOpen = mode === 'paused';
+  const cartUnits = getCartUnits(cart);
+  const [landingSequence, setLandingSequence] = useState(0);
 
   const handleExplorationChange = useCallback((active: boolean) => {
     dispatch(active ? 'lock' : 'unlock');
@@ -77,17 +80,38 @@ export function Store3DExperience({
         onAdd={onAdd}
         onResume={resumeShopping}
         onExplorationChange={handleExplorationChange}
+        onFlightLanded={() => setLandingSequence((current) => current + 1)}
       />
 
       <Button
         className="store-3d-cart-toggle"
+        id="store-3d-cart-toggle"
         variant={isCartOpen ? 'default' : 'secondary'}
         onClick={isCartOpen ? resumeShopping : pauseShopping}
         aria-expanded={isCartOpen}
         aria-controls="store-3d-cart"
+        aria-label={`${isCartOpen ? 'Hide' : 'Open'} basket, ${cartUnits} ${cartUnits === 1 ? 'item' : 'items'}`}
       >
-        <ShoppingBasket size={17} /> {isCartOpen ? 'Hide basket' : 'Basket'}{' '}
-        <kbd>B</kbd>
+        <span
+          className="store-3d-cart-count"
+          key={`${cartUnits}-${landingSequence}`}
+          aria-hidden="true"
+        >
+          {cartUnits}
+        </span>
+        <span
+          id="store-3d-basket-target"
+          className={
+            landingSequence
+              ? 'store-3d-basket-icon landed'
+              : 'store-3d-basket-icon'
+          }
+          key={landingSequence}
+          aria-hidden="true"
+        >
+          <ShoppingBasket className="size-6" size={24} />
+        </span>
+        {isCartOpen ? 'Hide basket' : 'Basket'} <kbd>B</kbd>
       </Button>
 
       <div

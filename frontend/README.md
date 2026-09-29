@@ -132,6 +132,10 @@ it; B or Esc pauses the scene, releases the mouse, and opens the cart. Press B
 again or click the store viewport to resume. The cart keeps its checkout button
 at the bottom while only its item list scrolls. `shoppingSession.ts` coordinates
 this state with the browser's actual pointer-lock events in `scene/controls/`.
+After a successful 3D pick, `FlyingIngredient.tsx` reuses that ingredient's GLB
+for a shrinking arc from the crosshair to the enlarged basket icon. A red badge
+shows the cart's total unit count, and the 3D pick does not show the old success
+toast; checkout results and errors still use the toast.
 The frozen cabinet
 is placed near the back wall with a 15cm service gap. Warm fill lighting and
 lighter sage/ivory fixtures retain the app's grocery-market palette.

@@ -41,6 +41,21 @@ import {
   getShoppingShortcut,
   shoppingSessionReducer,
 } from '../src/features/store/view/scene/controls/shoppingSession.ts';
+import { getCartFlightFrame } from '../src/features/store/view/scene/products/cartFlight.ts';
+
+test('a picked ingredient follows an upward arc to the basket while shrinking', () => {
+  const target = [0.88, 0.91];
+  const start = getCartFlightFrame(0, target);
+  const middle = getCartFlightFrame(0.5, target);
+  const end = getCartFlightFrame(1, target);
+  assert.deepEqual(start, { x: 0, y: 0, scale: 1 });
+  assert.ok(middle.x > 0 && middle.x < target[0]);
+  assert.ok(middle.y > target[1] * 0.5);
+  assert.ok(middle.scale < start.scale && middle.scale > end.scale);
+  assert.ok(Math.abs(end.x - target[0]) < 1e-9);
+  assert.ok(Math.abs(end.y - target[1]) < 1e-9);
+  assert.ok(end.scale <= 0.12 + 1e-9);
+});
 
 test('shopping pause survives repeated unlock events, and resumes only after pointer lock succeeds', () => {
   let mode = 'entry';
