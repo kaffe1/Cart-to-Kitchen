@@ -20,6 +20,7 @@ The backend is intentionally not implemented here. Temporary in-memory data keep
 npm install
 npm run dev
 npm run lint
+npm run test:store
 npm run build
 npm run preview
 ```
@@ -98,10 +99,63 @@ The script validates filenames against the Ingredient catalog before processing.
 `prepare-produce-models.py` remains an alias for the new command.
 
 `IngredientGlbModel.tsx` loads `model_web/<category>/<ingredient-id>.glb` and aligns
-each model's bottom to the shelf surface. Models occupy only tiers one and two.
-Their width and interaction boxes adapt to category counts without lengthening
-the four standard shelves. Produce retains its preferred 0.3 scale where it fits;
-other categories fit their slot bounds. Focus highlighting uses cloned materials.
+each model's bottom to the display surface. `productDisplay.ts` gives products
+stable display dimensions and repeated facings. Each SKU's mesh parts use
+instanced rendering, sharing geometry, textures, and its cloned focus materials.
+The 80 ingredients occupy 296 display copies without duplicating GLB downloads.
+
+`storeLayout.ts` defines physical placements separately from recipe categories:
+five stepped produce tables, three modular grocery shelves, a meat/seafood
+counter, a dairy chiller, and a freezer. Canned tomatoes are in the pantry, tofu
+and juice are chilled, and ice cream and puff pastry are in the freezer. Price
+labels use the catalog prices. The existing basket remains the checkout flow;
+the physical checkout counter is scenery with a basket shortcut sign.
+
+Fixture structures use small rounded corners and are batched by material,
+dimensions, and corner radius. Cabinet panels have inset edges and separated
+flat faces to avoid depth flicker. The meat counter's lowered glass guard and
+single-line price labels keep products readable at close range. The basket
+stand holds open mesh baskets with bottoms, rims, and raised handles.
+
+`src/features/store/view/scene/layout/storeAppearance.ts` contains the visual controls:
+`STORE_CAMERA_FOV = 48` is the vertical field of view in degrees (lower values
+give a narrower view); `PRODUCT_FOCUS_SCALE = 1.16` and
+`PRODUCT_FOCUS_RESPONSE = 28` control focus enlargement and animation speed.
+Each product copy enlarges around its own display position. The product popover
+uses a dark background at 64% opacity, white text, and 20px backdrop blur in
+`src/app/globals.css` under `.store-product-popover`.
+The popover is scaled to 4/3 of its base size, anchored just above the product,
+and highlighted by a clockwise border glow (disabled for reduced motion).
+
+Shopping starts from the centered entry prompt. Click a focused product to add
+it; B or Esc pauses the scene, releases the mouse, and opens the cart. Press B
+again or click the store viewport to resume. The cart keeps its checkout button
+at the bottom while only its item list scrolls. `shoppingSession.ts` coordinates
+this state with the browser's actual pointer-lock events in `scene/controls/`.
+The frozen cabinet
+is placed near the back wall with a 15cm service gap. Warm fill lighting and
+lighter sage/ivory fixtures retain the app's grocery-market palette.
+
+The 3D implementation is grouped by responsibility under `src/features/store/view/scene/`:
+`layout/` owns fixture positions and visual constants; `environment/` owns the room
+and checkout scenery; `fixtures/` owns shelf geometry and signs; `products/` owns
+GLB loading, normalization, display facings, and `ProductShape`; `controls/` owns
+movement, picking, keyboard guards, and the shopping session. `MarketScene.tsx`
+assembles those parts, while `StoreCanvas.tsx` owns the camera, renderer, and
+entry/pause overlays.
+
+Product picking uses a separate
+layer containing SKU hitboxes and solid occluders; transparent counter glass
+does not block shopping. Rotated fixture footprints, the checkout counter, and
+the basket stand participate in player collision. Generated signs, tiled floor,
+and the small reflection environment require no external fonts, HDRs, or images.
+
+`npm run test:store` checks catalog/model coverage, animated display bounds,
+price-card clearance, counter sightlines, coplanar fixture faces, rounded-box
+dimensions, basket cavities, focus response, rotated collisions, paths from
+the entrance to every display front, and model/material normalization.
+It uses Node's built-in test runner and TypeScript stripping
+(available in the project's minimum Node 22.13 version).
 
 ## Backend integration
 

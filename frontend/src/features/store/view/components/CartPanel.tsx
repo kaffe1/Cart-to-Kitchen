@@ -1,11 +1,20 @@
-import { Minus, Plus, ReceiptText, ShoppingBasket, StickyNote } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { appRoutes } from '@/app/routes';
+import {
+  Minus,
+  Plus,
+  ReceiptText,
+  ShoppingBasket,
+  StickyNote,
+} from 'lucide-react';
 import { Badge } from '@/shared/components/ui/badge';
-import { Button, buttonVariants } from '@/shared/components/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import { Progress } from '@/shared/components/ui/progress';
 import { formatSek } from '@/shared/utils/format';
-import type { CartLine, Ingredient, ShoppingListItem, Wallet } from '../../model/store.types';
+import type {
+  CartLine,
+  Ingredient,
+  ShoppingListItem,
+  Wallet,
+} from '../../model/store.types';
 
 interface CartPanelProps {
   cart: CartLine[];
@@ -29,7 +38,8 @@ export function CartPanel({
   onCheckout,
 }: CartPanelProps) {
   const remaining = wallet.balanceSek - total;
-  const usedPercent = wallet.balanceSek === 0 ? 100 : (total / wallet.balanceSek) * 100;
+  const usedPercent =
+    wallet.balanceSek === 0 ? 100 : (total / wallet.balanceSek) * 100;
 
   return (
     <aside className="cart-panel">
@@ -38,7 +48,9 @@ export function CartPanel({
           <span className="eyebrow">Current trip</span>
           <h2>Your cart</h2>
         </div>
-        <span className="round-icon"><ShoppingBasket size={19} /></span>
+        <span className="round-icon">
+          <ShoppingBasket size={19} />
+        </span>
       </div>
 
       <div className="budget-card">
@@ -51,7 +63,10 @@ export function CartPanel({
           <span>{formatSek(total)} in cart</span>
           <span>{formatSek(Math.max(remaining, 0))} left</span>
         </div>
-        <p>+{wallet.hourlyGrantSek} SEK each hour, 09:00–17:00 · cap {wallet.capSek} SEK</p>
+        <p>
+          +{wallet.hourlyGrantSek} SEK each hour, 09:00–17:00 · cap{' '}
+          {wallet.capSek} SEK
+        </p>
       </div>
 
       {shoppingList.length > 0 && (
@@ -59,12 +74,14 @@ export function CartPanel({
           <StickyNote size={17} />
           <div>
             <strong>Kitchen note</strong>
-            <p>{shoppingList.length} missing ingredient(s) are waiting below.</p>
+            <p>
+              {shoppingList.length} missing ingredient(s) are waiting below.
+            </p>
           </div>
         </div>
       )}
 
-      <div className="cart-lines">
+      <section className="cart-lines" aria-label="Cart items">
         {cart.length === 0 ? (
           <div className="empty-mini">
             <span>🛒</span>
@@ -73,7 +90,9 @@ export function CartPanel({
           </div>
         ) : (
           cart.map((line) => {
-            const item = ingredients.find((ingredient) => ingredient.id === line.ingredientId);
+            const item = ingredients.find(
+              (ingredient) => ingredient.id === line.ingredientId,
+            );
             if (!item) return null;
             return (
               <div key={line.ingredientId} className="cart-line">
@@ -82,15 +101,29 @@ export function CartPanel({
                   <strong>{item.name}</strong>
                   <small>
                     {formatSek(item.priceSek * line.quantity)} ·{' '}
-                    {item.usesPerUnit === 'infinite' ? '∞' : item.usesPerUnit * line.quantity} uses
+                    {item.usesPerUnit === 'infinite'
+                      ? '∞'
+                      : item.usesPerUnit * line.quantity}{' '}
+                    uses
                   </small>
                 </div>
-                <div className="quantity-stepper" aria-label={`${item.name} quantity`}>
-                  <button type="button" onClick={() => onQuantityChange(item.id, line.quantity - 1)} aria-label={`Remove one ${item.name}`}>
+                <div
+                  className="quantity-stepper"
+                  aria-label={`${item.name} quantity`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => onQuantityChange(item.id, line.quantity - 1)}
+                    aria-label={`Remove one ${item.name}`}
+                  >
                     <Minus size={14} />
                   </button>
                   <span>{line.quantity}</span>
-                  <button type="button" onClick={() => onQuantityChange(item.id, line.quantity + 1)} aria-label={`Add one ${item.name}`}>
+                  <button
+                    type="button"
+                    onClick={() => onQuantityChange(item.id, line.quantity + 1)}
+                    aria-label={`Add one ${item.name}`}
+                  >
                     <Plus size={14} />
                   </button>
                 </div>
@@ -98,23 +131,31 @@ export function CartPanel({
             );
           })
         )}
-      </div>
+        {shoppingList.length > 0 && (
+          <div className="note-items">
+            {shoppingList.map((entry) => {
+              const item = ingredients.find(
+                (ingredient) => ingredient.id === entry.ingredientId,
+              );
+              return item ? (
+                <Badge key={entry.ingredientId} variant="outline">
+                  {item.emoji} {item.name}
+                </Badge>
+              ) : null;
+            })}
+          </div>
+        )}
+      </section>
 
-      {shoppingList.length > 0 && (
-        <div className="note-items">
-          {shoppingList.map((entry) => {
-            const item = ingredients.find((ingredient) => ingredient.id === entry.ingredientId);
-            return item ? <Badge key={entry.ingredientId} variant="outline">{item.emoji} {item.name}</Badge> : null;
-          })}
-        </div>
-      )}
-
-      <Button className="w-full" size="lg" onClick={onCheckout} disabled={cart.length === 0 || remaining < 0 || isCheckingOut}>
-        <ReceiptText size={18} /> {isCheckingOut ? 'Checking out…' : `Checkout · ${formatSek(total)}`}
+      <Button
+        className="cart-checkout w-full"
+        size="lg"
+        onClick={onCheckout}
+        disabled={cart.length === 0 || remaining < 0 || isCheckingOut}
+      >
+        <ReceiptText size={18} />{' '}
+        {isCheckingOut ? 'Checking out…' : `Checkout · ${formatSek(total)}`}
       </Button>
-      <Link to={appRoutes.kitchen} className={buttonVariants({ variant: 'outline', className: 'mt-2 w-full' })}>
-        Go to kitchen
-      </Link>
     </aside>
   );
 }

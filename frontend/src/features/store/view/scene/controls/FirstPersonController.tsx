@@ -2,10 +2,10 @@ import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import { Vector3 } from 'three';
 import { isTypingTarget } from './keyboard';
-import { canWalkTo } from './storeLayout';
+import { canWalkTo } from '../layout/storeLayout';
 
 const EYE_HEIGHT = 1.7;
-const MOVEMENT_SPEED = 4.2;
+const MOVEMENT_SPEED = 2.8;
 const MAX_FRAME_DELTA = 0.1;
 
 type MovementDirection = 'forward' | 'backward' | 'left' | 'right';

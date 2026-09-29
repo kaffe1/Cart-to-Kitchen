@@ -1,5 +1,5 @@
 import { ShoppingBasket } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import type {
   CartLine,
@@ -7,8 +7,12 @@ import type {
   ShoppingListItem,
   Wallet,
 } from '../../model/store.types';
-import { isTypingTarget } from '../scene/keyboard';
-import { StoreCanvas } from '../scene/StoreCanvas';
+import { isTypingTarget } from '../scene/controls/keyboard';
+import { StoreCanvas, type StoreCanvasHandle } from '../scene/StoreCanvas';
+import {
+  getShoppingShortcut,
+  shoppingSessionReducer,
+} from '../scene/controls/shoppingSession';
 import { CartPanel } from './CartPanel';
 
 interface Store3DExperienceProps {
@@ -34,39 +38,51 @@ export function Store3DExperience({
   onQuantityChange,
   onCheckout,
 }: Store3DExperienceProps) {
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isExploring, setIsExploring] = useState(false);
+  const [mode, dispatch] = useReducer(shoppingSessionReducer, 'entry');
+  const canvasRef = useRef<StoreCanvasHandle>(null);
+  const isCartOpen = mode === 'paused';
 
   const handleExplorationChange = useCallback((active: boolean) => {
-    setIsExploring(active);
-    setIsCartOpen(!active);
+    dispatch(active ? 'lock' : 'unlock');
   }, []);
+  const pauseShopping = useCallback(() => {
+    dispatch('pause');
+    canvasRef.current?.pauseShopping();
+  }, []);
+  const resumeShopping = useCallback(
+    () => canvasRef.current?.resumeShopping(),
+    [],
+  );
 
   useEffect(() => {
     const handleBasketShortcut = (event: KeyboardEvent) => {
-      if (event.code !== 'KeyB' || event.repeat || isTypingTarget(event.target))
-        return;
+      if (event.repeat || isTypingTarget(event.target)) return;
+      const action = getShoppingShortcut(mode, event.code);
+      if (!action) return;
       event.preventDefault();
-      setIsCartOpen((current) => !current);
+      if (action === 'pause') pauseShopping();
+      else resumeShopping();
     };
 
     window.addEventListener('keydown', handleBasketShortcut);
     return () => window.removeEventListener('keydown', handleBasketShortcut);
-  }, []);
+  }, [mode, pauseShopping, resumeShopping]);
 
   return (
     <div className="store-3d-experience">
       <StoreCanvas
+        ref={canvasRef}
+        mode={mode}
         ingredients={ingredients}
         onAdd={onAdd}
+        onResume={resumeShopping}
         onExplorationChange={handleExplorationChange}
       />
 
       <Button
         className="store-3d-cart-toggle"
         variant={isCartOpen ? 'default' : 'secondary'}
-        onClick={() => setIsCartOpen((current) => !current)}
-        disabled={isExploring}
+        onClick={isCartOpen ? resumeShopping : pauseShopping}
         aria-expanded={isCartOpen}
         aria-controls="store-3d-cart"
       >
@@ -80,6 +96,7 @@ export function Store3DExperience({
           isCartOpen ? 'store-3d-cart-drawer open' : 'store-3d-cart-drawer'
         }
         aria-hidden={!isCartOpen}
+        inert={!isCartOpen}
       >
         <CartPanel
           cart={cart}

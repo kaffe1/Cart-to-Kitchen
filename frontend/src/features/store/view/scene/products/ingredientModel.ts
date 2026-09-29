@@ -2,26 +2,23 @@ import {
   Box3,
   Color,
   Material,
+  Matrix4,
   Mesh,
   MeshStandardMaterial,
   Object3D,
   Vector3,
 } from 'three';
+import type { Position3 } from '../layout/storeLayout';
 
-export const INGREDIENT_MODEL_SIZE = new Vector3(0.58, 0.66, 0.44);
-
-//scale and assign material to model
+// One normalized template per SKU; all its display copies share the same parts.
 export function prepareIngredientModel(
   source: Object3D,
-  maxWidth = INGREDIENT_MODEL_SIZE.x,
-  preferredScale = Infinity,
+  targetSize: Position3,
 ) {
   const object = source.clone(true);
   const materialCopies = new Map<Material, Material>();
   object.traverse((node) => {
     if (!(node instanceof Mesh)) return;
-    node.castShadow = true;
-    node.receiveShadow = true;
     const copyMaterial = (material: Material) => {
       let copy = materialCopies.get(material);
       if (!copy) {
@@ -48,12 +45,27 @@ export function prepareIngredientModel(
   }
   const center = bounds.getCenter(new Vector3());
   const scale = Math.min(
-    preferredScale,
-    Math.min(maxWidth, INGREDIENT_MODEL_SIZE.x) / size.x,
-    INGREDIENT_MODEL_SIZE.y / size.y,
-    INGREDIENT_MODEL_SIZE.z / size.z,
+    targetSize[0] / size.x,
+    targetSize[1] / size.y,
+    targetSize[2] / size.z,
   );
   const offset = new Vector3(-center.x, -bounds.min.y, -center.z);
+  const normalization = new Matrix4()
+    .makeScale(scale, scale, scale)
+    .multiply(new Matrix4().makeTranslation(offset.x, offset.y, offset.z));
+  const parts: {
+    geometry: Mesh['geometry'];
+    material: Mesh['material'];
+    matrix: Matrix4;
+  }[] = [];
+  object.traverse((node) => {
+    if (node instanceof Mesh)
+      parts.push({
+        geometry: node.geometry,
+        material: node.material,
+        matrix: normalization.clone().multiply(node.matrixWorld),
+      });
+  });
   const materials = [...materialCopies.values()];
   const appearance = materials
     .filter(
@@ -66,7 +78,7 @@ export function prepareIngredientModel(
       emissive: material.emissive.clone(),
       emissiveIntensity: material.emissiveIntensity,
     }));
-  return { object, scale, offset, materials, appearance };
+  return { parts, materials, appearance };
 }
 
 const FOCUS_TINT = new Color('#d6ed9e');

@@ -1,10 +1,10 @@
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
-import { Object3D, Raycaster, Vector2 } from 'three';
-import { isTypingTarget } from './keyboard';
+import { Object3D, Raycaster, Vector2, type Intersection } from 'three';
+import { INTERACTION_LAYER } from '../layout/storeLayout';
 
 const SCREEN_CENTER = new Vector2(0, 0);
-const INTERACTION_DISTANCE = 4.5;
+const INTERACTION_DISTANCE = 3.2;
 
 function findIngredientId(object: Object3D | null): string | null {
   let candidate = object;
@@ -31,6 +31,8 @@ export function ProductInteractionController({
 }: ProductInteractionControllerProps) {
   const raycaster = useRef(new Raycaster());
   const lastFocusedId = useRef<string | null>(null);
+  const intersections = useRef<Intersection[]>([]);
+  const elapsed = useRef(0);
 
   useEffect(() => {
     if (enabled) return;
@@ -41,30 +43,32 @@ export function ProductInteractionController({
   useEffect(() => {
     if (!enabled) return;
 
-    const handleInteraction = (event: KeyboardEvent) => {
-      if (
-        event.code !== 'KeyE' ||
-        event.repeat ||
-        isTypingTarget(event.target) ||
-        !focusedId
-      )
+    const handleClick = (event: MouseEvent) => {
+      if (event.button !== 0 || !document.pointerLockElement || !focusedId)
         return;
-      event.preventDefault();
       onAdd(focusedId);
     };
-
-    window.addEventListener('keydown', handleInteraction);
-    return () => window.removeEventListener('keydown', handleInteraction);
+    // Buying is only enabled during pointer-locked shopping.
+    window.addEventListener('mousedown', handleClick);
+    return () => {
+      window.removeEventListener('mousedown', handleClick);
+    };
   }, [enabled, focusedId, onAdd]);
 
-  useFrame(({ camera, scene }) => {
+  useFrame(({ camera, scene }, delta) => {
     if (!enabled) return;
+    elapsed.current += delta;
+    if (elapsed.current < 1 / 30) return;
+    elapsed.current = 0;
 
     raycaster.current.far = INTERACTION_DISTANCE;
+    raycaster.current.layers.set(INTERACTION_LAYER);
     raycaster.current.setFromCamera(SCREEN_CENTER, camera);
+    intersections.current.length = 0;
     const [nearestIntersection] = raycaster.current.intersectObjects(
       scene.children,
       true,
+      intersections.current,
     );
     const nextFocusedId = findIngredientId(nearestIntersection?.object ?? null);
 
