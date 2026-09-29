@@ -1,31 +1,38 @@
 import { Canvas, useFrame, type ThreeEvent } from '@react-three/fiber';
-import {
-  Float,
-  Html,
-  PointerLockControls,
-  RoundedBox,
-} from '@react-three/drei';
+import { Html, PointerLockControls, useProgress } from '@react-three/drei';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { MathUtils, type Group } from 'three';
 import { Button } from '@/shared/components/ui/button';
 import { formatSek } from '@/shared/utils/format';
 import type { Ingredient } from '../../model/store.types';
 import { FirstPersonController } from './FirstPersonController';
+import { MarketShell } from './MarketShell';
+import { IngredientGlbModel } from './IngredientGlbModel';
 import { ProductInteractionController } from './ProductInteractionController';
+import { Shelf } from './Shelf';
+import {
+  STORE_SECTIONS,
+  shelfProductDimensions,
+  twoTierShelfPosition,
+} from './storeLayout';
 
 const ENTER_STORE_SELECTOR = '#store-enter-button';
-
 interface ProductShapeProps {
   ingredient: Ingredient;
   position: [number, number, number];
+  maxWidth: number;
+  hitboxWidth: number;
   focused: boolean;
   feedbackSequence: number;
   onAdd: (ingredientId: string) => void;
 }
 
+// ingredient model
 function ProductShape({
   ingredient,
   position,
+  maxWidth,
+  hitboxWidth,
   focused,
   feedbackSequence,
   onAdd,
@@ -40,8 +47,8 @@ function ProductShape({
   useFrame((_, delta) => {
     if (!group.current) return;
     pulseProgress.current = Math.max(0, pulseProgress.current - delta * 2.8);
-    const pulseScale = Math.sin(pulseProgress.current * Math.PI) * 0.28;
-    const targetScale = (focused ? 1.18 : 1) + pulseScale;
+    const pulseScale = Math.sin(pulseProgress.current * Math.PI) * 0.06;
+    const targetScale = (focused ? 1.14 : 1) + pulseScale;
     const scale = MathUtils.damp(group.current.scale.x, targetScale, 18, delta);
     group.current.scale.setScalar(scale);
   });
@@ -53,55 +60,54 @@ function ProductShape({
   };
 
   return (
-    <Float speed={1.5} rotationIntensity={0.12} floatIntensity={0.18}>
-      <group
-        ref={group}
-        position={position}
-        userData={{ ingredientId: ingredient.id }}
-      >
-        <mesh castShadow onClick={click}>
-          <sphereGeometry args={[0.32, 24, 24]} />
-          <meshStandardMaterial
-            color={ingredient.color}
-            emissive={focused ? '#f7b928' : '#000000'}
-            emissiveIntensity={focused ? 0.48 : 0}
-            roughness={0.72}
+    <group
+      position={position}
+      userData={{ ingredientId: ingredient.id }}
+      onClick={click}
+    >
+      {/* Animation group : scale when focus */}
+      <group ref={group}>
+        <Suspense fallback={null}>
+          <IngredientGlbModel
+            ingredient={ingredient}
+            focused={focused}
+            maxWidth={maxWidth}
           />
-        </mesh>
-        <mesh position={[0, -0.38, 0]} castShadow onClick={click}>
-          <cylinderGeometry args={[0.23, 0.28, 0.25, 20]} />
-          <meshStandardMaterial color="#f5d990" roughness={0.9} />
-        </mesh>
-        {focused && (
-          <>
-            <mesh position={[0, -0.54, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-              <ringGeometry args={[0.32, 0.45, 32]} />
-              <meshBasicMaterial color="#f7b928" />
-            </mesh>
-            <Html
-              center
-              position={[0, 0.78, 0]}
-              distanceFactor={7}
-              style={{ pointerEvents: 'none' }}
-            >
-              <div className="store-product-popover">
-                <span>{ingredient.emoji}</span>
-                <div>
-                  <strong>{ingredient.name}</strong>
-                  <small>
-                    {formatSek(ingredient.priceSek)} ·{' '}
-                    {ingredient.usesPerUnit === 'infinite'
-                      ? '∞ uses'
-                      : `${ingredient.usesPerUnit} uses`}
-                  </small>
-                  <em>Press E or click to add</em>
-                </div>
-              </div>
-            </Html>
-          </>
-        )}
+        </Suspense>
       </group>
-    </Float>
+      <mesh position={[0, 0.34, 0]}>
+        <boxGeometry args={[hitboxWidth, 0.68, 0.52]} />
+        <meshBasicMaterial
+          transparent
+          opacity={0}
+          depthWrite={false}
+          colorWrite={false}
+        />
+      </mesh>
+      {focused && (
+        <>
+          <Html
+            center
+            position={[0, 0.82, 0]}
+            style={{ pointerEvents: 'none' }}
+          >
+            <div className="store-product-popover">
+              <span>{ingredient.emoji}</span>
+              <div>
+                <strong>{ingredient.name}</strong>
+                <small>
+                  {formatSek(ingredient.priceSek)} ·{' '}
+                  {ingredient.usesPerUnit === 'infinite'
+                    ? '∞ uses'
+                    : `${ingredient.usesPerUnit} uses`}
+                </small>
+                <em>Press E or click to add</em>
+              </div>
+            </div>
+          </Html>
+        </>
+      )}
+    </group>
   );
 }
 
@@ -116,6 +122,7 @@ interface MarketSceneProps {
   onExplorationEnd: () => void;
 }
 
+// wrap ingredients inside market scene
 function MarketScene({
   ingredients,
   onAdd,
@@ -126,63 +133,42 @@ function MarketScene({
   onExplorationStart,
   onExplorationEnd,
 }: MarketSceneProps) {
-  const positions: [number, number, number][] = [
-    [-2.5, 1.1, -0.1],
-    [-1.7, 1.1, -0.1],
-    [-0.9, 1.1, -0.1],
-    [0.9, 1.1, -0.1],
-    [1.7, 1.1, -0.1],
-    [2.5, 1.1, -0.1],
-    [-2.5, 0.15, 0.15],
-    [-1.7, 0.15, 0.15],
-    [-0.9, 0.15, 0.15],
-    [0.9, 0.15, 0.15],
-    [1.7, 0.15, 0.15],
-    [2.5, 0.15, 0.15],
-  ];
-
   return (
     <>
-      <color attach="background" args={['#eef3e8']} />
-      <fog attach="fog" args={['#eef3e8', 8, 16]} />
-      <ambientLight intensity={1.25} />
-      <directionalLight position={[4, 7, 5]} intensity={2.4} castShadow />
-      <RoundedBox
-        args={[7, 0.22, 1.45]}
-        radius={0.08}
-        position={[0, -0.58, 0]}
-        receiveShadow
-      >
-        <meshStandardMaterial color="#234f43" roughness={0.88} />
-      </RoundedBox>
-      <RoundedBox
-        args={[7.3, 0.32, 1.8]}
-        radius={0.08}
-        position={[0, -1.12, 0.15]}
-        receiveShadow
-      >
-        <meshStandardMaterial color="#d8a24b" roughness={0.9} />
-      </RoundedBox>
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, -1.29, 0]}
-        receiveShadow
-      >
-        <planeGeometry args={[18, 18]} />
-        <meshStandardMaterial color="#f5e8cf" roughness={1} />
-      </mesh>
-      {ingredients.slice(0, 12).map((item, index) => (
-        <ProductShape
-          key={item.id}
-          ingredient={item}
-          position={positions[index]}
-          focused={focusedId === item.id}
-          feedbackSequence={
-            addFeedback.ingredientId === item.id ? addFeedback.sequence : 0
-          }
-          onAdd={onAdd}
-        />
-      ))}
+      <MarketShell />
+      {STORE_SECTIONS.map((section) => {
+        const products = ingredients.filter(
+          (ingredient) => ingredient.category === section.category,
+        );
+        const dimensions = shelfProductDimensions(
+          products.length,
+          section.width,
+        );
+        return (
+          <Shelf key={section.category} section={section}>
+            {products.map((item, index) => (
+              <ProductShape
+                key={item.id}
+                ingredient={item}
+                position={twoTierShelfPosition(
+                  index,
+                  products.length,
+                  section.width,
+                )}
+                maxWidth={dimensions.maxWidth}
+                hitboxWidth={dimensions.hitboxWidth}
+                focused={focusedId === item.id}
+                feedbackSequence={
+                  addFeedback.ingredientId === item.id
+                    ? addFeedback.sequence
+                    : 0
+                }
+                onAdd={onAdd}
+              />
+            ))}
+          </Shelf>
+        );
+      })}
       <FirstPersonController enabled={isExploring} />
       <ProductInteractionController
         enabled={isExploring}
@@ -211,6 +197,7 @@ export function StoreCanvas({
   onAdd,
   onExplorationChange,
 }: StoreCanvasProps) {
+  const { active: isLoadingModels, progress } = useProgress();
   const [isExploring, setIsExploring] = useState(false);
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [addFeedback, setAddFeedback] = useState({
@@ -239,7 +226,7 @@ export function StoreCanvas({
   }, [onExplorationChange]);
 
   return (
-    <div className="store-canvas" aria-label="Interactive 3D grocery shelf">
+    <div className="store-canvas" aria-label="Interactive 3D grocery store">
       <Suspense
         fallback={<div className="canvas-loading">Stocking the shelves…</div>}
       >
@@ -272,13 +259,18 @@ export function StoreCanvas({
           <Button
             id="store-enter-button"
             size="lg"
-            disabled={isExploring}
+            disabled={isExploring || isLoadingModels}
             tabIndex={isExploring ? -1 : 0}
           >
             Enter Store
           </Button>
         </div>
       </div>
+      {isLoadingModels && (
+        <output className="store-model-loading" aria-live="polite">
+          Loading the shelves… {Math.round(progress)}%
+        </output>
+      )}
       {isExploring && <div className="store-crosshair" aria-hidden="true" />}
       <div className="canvas-help">
         {isExploring

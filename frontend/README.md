@@ -66,6 +66,43 @@ View -> Presenter -> Model -> Backend API
 - View components render the interface and forward user actions to presenters.
 - Shared code contains only application-wide infrastructure and reusable UI.
 
+## Store GLB models
+
+All 80 ingredients have models named by Ingredient ID. Assets are organized as:
+
+```text
+public/models/ingredients/
+├── model_origin/               # Supplied originals, unchanged file contents
+│   ├── vegetables-fruits/      # 30
+│   ├── meat-seafood/            # 12
+│   ├── dairy-eggs/              # 10
+│   ├── grains-staples/          # 16
+│   └── other-ingredients/       # 12
+└── model_web/                  # Matching category folders; loaded by the scene
+```
+
+Web copies preserve geometry and material settings, cap base-color textures at
+1024px and other textures at 512px, and retain embedded images. The shared
+`ingredientModelAssets.json` maps categories to folders and records the avocado's
+30-degree X rotation, so regeneration preserves its display orientation.
+
+After replacing source GLBs, regenerate the web copies with Python and Pillow:
+
+```sh
+python3 scripts/prepare-ingredient-models.py
+# Prepare one category only:
+python3 scripts/prepare-ingredient-models.py --category meat-seafood
+```
+
+The script validates filenames against the Ingredient catalog before processing.
+`prepare-produce-models.py` remains an alias for the new command.
+
+`IngredientGlbModel.tsx` loads `model_web/<category>/<ingredient-id>.glb` and aligns
+each model's bottom to the shelf surface. Models occupy only tiers one and two.
+Their width and interaction boxes adapt to category counts without lengthening
+the four standard shelves. Produce retains its preferred 0.3 scale where it fits;
+other categories fit their slot bounds. Focus highlighting uses cloned materials.
+
 ## Backend integration
 
 Copy `.env.example` to `.env` and set the Python API base URL when a backend is available:
@@ -80,15 +117,15 @@ The current dummy state is held in memory. Refreshing the page resets guest prog
 
 ## Routes
 
-| Route | Purpose |
-| --- | --- |
-| `/store` | Browse ingredients, use the 3D shelf, manage the cart, and check out |
-| `/kitchen` | Minimal Kitchen placeholder with sample data |
-| `/recipes/:recipeId` | Minimal Recipe placeholder with a sample ID |
-| `/cook/:recipeId` | Minimal Cooking placeholder with a sample step |
-| `/me` | Minimal Profile placeholder |
-| `/login` | Sign in through the temporary frontend flow |
-| `/register` | Create an account through the temporary frontend flow |
-| `/design-system` | Development-only reference for global tokens and shared components |
+| Route                | Purpose                                                              |
+| -------------------- | -------------------------------------------------------------------- |
+| `/store`             | Browse ingredients, use the 3D shelf, manage the cart, and check out |
+| `/kitchen`           | Minimal Kitchen placeholder with sample data                         |
+| `/recipes/:recipeId` | Minimal Recipe placeholder with a sample ID                          |
+| `/cook/:recipeId`    | Minimal Cooking placeholder with a sample step                       |
+| `/me`                | Minimal Profile placeholder                                          |
+| `/login`             | Sign in through the temporary frontend flow                          |
+| `/register`          | Create an account through the temporary frontend flow                |
+| `/design-system`     | Development-only reference for global tokens and shared components   |
 
 Store and Auth are the active feature implementations. Kitchen, Recipes, Cooking, and Profile intentionally contain only small MVP placeholders for later development.

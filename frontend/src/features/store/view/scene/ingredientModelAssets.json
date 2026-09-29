@@ -1,0 +1,12 @@
+{
+  "categories": {
+    "Vegetables & Fruits": "vegetables-fruits",
+    "Meat & Seafood": "meat-seafood",
+    "Dairy & Eggs": "dairy-eggs",
+    "Grains & Staples": "grains-staples",
+    "Other Ingredients": "other-ingredients"
+  },
+  "rotationXDegrees": {
+    "avocado": 30
+  }
+}

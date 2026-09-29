@@ -1,17 +1,12 @@
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
-import { MathUtils, Vector3 } from 'three';
+import { Vector3 } from 'three';
 import { isTypingTarget } from './keyboard';
+import { canWalkTo } from './storeLayout';
 
 const EYE_HEIGHT = 1.7;
 const MOVEMENT_SPEED = 4.2;
 const MAX_FRAME_DELTA = 0.1;
-const STORE_BOUNDS = {
-  minX: -7.5,
-  maxX: 7.5,
-  minZ: -7.5,
-  maxZ: 7.5,
-} as const;
 
 type MovementDirection = 'forward' | 'backward' | 'left' | 'right';
 type MovementState = Record<MovementDirection, boolean>;
@@ -100,16 +95,11 @@ export function FirstPersonController({ enabled }: FirstPersonControllerProps) {
     if (travel.current.lengthSq() > 0) {
       const distance = MOVEMENT_SPEED * Math.min(delta, MAX_FRAME_DELTA);
       travel.current.normalize().multiplyScalar(distance);
-      camera.position.x = MathUtils.clamp(
-        camera.position.x + travel.current.x,
-        STORE_BOUNDS.minX,
-        STORE_BOUNDS.maxX,
-      );
-      camera.position.z = MathUtils.clamp(
-        camera.position.z + travel.current.z,
-        STORE_BOUNDS.minZ,
-        STORE_BOUNDS.maxZ,
-      );
+      const nextX = camera.position.x + travel.current.x;
+      if (canWalkTo(nextX, camera.position.z)) camera.position.x = nextX;
+
+      const nextZ = camera.position.z + travel.current.z;
+      if (canWalkTo(camera.position.x, nextZ)) camera.position.z = nextZ;
     }
   });
 
