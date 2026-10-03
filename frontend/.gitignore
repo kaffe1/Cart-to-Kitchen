@@ -25,3 +25,8 @@ yarn-error.log*
 # generated files
 /dist/
 *.tsbuildinfo
+
+/scripts/
+
+# assets
+model_origin/

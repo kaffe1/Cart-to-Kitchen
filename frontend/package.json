@@ -10,6 +10,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "lint": "oxlint src vite.config.ts",
+    "test:store": "node --experimental-strip-types --test tests/store-scene.test.mjs",
     "format": "oxfmt"
   },
   "dependencies": {
