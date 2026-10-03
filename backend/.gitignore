@@ -1,0 +1,9 @@
+# local Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# local secrets / overrides
+.env
+*.egg-info/
