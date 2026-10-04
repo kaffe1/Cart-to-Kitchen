@@ -6,6 +6,7 @@ export function useProfilePresenter() {
   const [isEmailDialogOpen, setEmailDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [isAvatarDialogOpen, setAvatarDialogOpen] = useState(false);
+  const [profile, setProfile] = useState(getProfilePlaceholder); //TODO: Change placeholder when backend in place
 
   const openUsernameDialog = () => {
     setUsernameDialogOpen(true);
@@ -38,8 +39,6 @@ export function useProfilePresenter() {
   const closeAvatarDialog = () => {
     setAvatarDialogOpen(false);
   };
-
-  const profile = getProfilePlaceholder();
 
   return {
     profile,

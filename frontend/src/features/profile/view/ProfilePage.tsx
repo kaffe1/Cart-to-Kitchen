@@ -1,7 +1,6 @@
 import { useProfilePresenter } from "../presenter/useProfilePresenter";
 import { ProfilePanel } from "./components/ProfilePanel";
 import { HistoryPanel } from "./components/HistoryPanel";
-import { FavoritePanel } from "./components/FavoritePanel";
 import { UsernameDialog } from "./components/UsernameDialog";
 import { PasswordDialog } from "./components/PasswordDialog";
 import { EmailDialog } from "./components/EmailDialog";
@@ -26,19 +25,18 @@ export function ProfilePage() {
 
   return (
     <section className="page-shell placeholder-page">
-      <div className="flex flex-col justify-between">
+      <div className="flex flex-row justify-between">
         <ProfilePanel
           profile={profile}
           onUsernameChange={openUsernameDialog}
           onAvatarChange={openAvatarDialog}
           onPasswordChange={openPasswordDialog}
           onEmailChange={openEmailDialog}
-          onSignOut={() => {}}
+          onSignOut={() => {}} //TODO: Implement sign out functionality
         />
 
         <div className="flex flex-row m-6">
-          <HistoryPanel />
-          <FavoritePanel />
+          <HistoryPanel cookedRecipes={profile.cookingHistory} />
         </div>
       </div>
 
@@ -49,12 +47,10 @@ export function ProfilePage() {
         onClose={closeUsernameDialog}
       />
       <EmailDialog open={isEmailDialogOpen} onClose={closeEmailDialog} />
-      <PasswordDialog open={isPasswordDialogOpen} onClose={closePasswordDialog} />
-
-      {/*<CircleUserRound size={34} />*/}
-      {/*<Badge variant="outline">{profile.mode}</Badge>*/}
-      {/*<h1>{profile.displayName}</h1>*/}
-      {/*<p>{profile.note}</p>*/}
+      <PasswordDialog
+        open={isPasswordDialogOpen}
+        onClose={closePasswordDialog}
+      />
     </section>
   );
 }
