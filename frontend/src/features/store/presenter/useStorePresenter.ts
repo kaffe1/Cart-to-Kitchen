@@ -3,7 +3,6 @@ import { appSession } from '../../../shared/api/appSession';
 import type {
   Ingredient,
   IngredientCategory,
-  ShoppingListItem,
 } from '../model/store.types';
 import {
   checkout,
@@ -13,9 +12,6 @@ import {
   subscribeStore,
 } from '../model/store.api';
 import { getCartTotal } from '../model/store.rules';
-
-// Shopping notes have no backend endpoint yet. They are deliberately empty.
-const shoppingList: ShoppingListItem[] = [];
 
 export function useStorePresenter() {
   const snapshot = useSyncExternalStore(
@@ -125,7 +121,6 @@ export function useStorePresenter() {
     filteredIngredients,
     cart: snapshot.shopping?.cart ?? [],
     wallet: snapshot.shopping?.wallet ?? null,
-    shoppingList,
     selectedIngredient:
       ingredients.find((item) => item.id === selectedIngredientId) ?? null,
     selectedIngredientId,

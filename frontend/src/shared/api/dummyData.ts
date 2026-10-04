@@ -1,4 +1,5 @@
 import type { Ingredient, IngredientCategory } from '../../features/store/model/store.types';
+import type { Recipe } from '../../features/recipes/model/recipes.types';
 
 function ingredient(
   id: string,
@@ -106,3 +107,128 @@ export const storeIngredients: Ingredient[] = [
   ingredient('ginger', '🫚', 'Ginger', 'Other Ingredients', 3, 17, ['ginger'], '#c4a15d'),
 ];
 
+function pantryIngredient(
+  id: string,
+  emoji: string,
+  name: string,
+  category: IngredientCategory,
+  aliases: string[] = [],
+): Ingredient {
+  return {
+    id, emoji, name, category,
+    usesPerUnit: 'infinite', priceSek: 0,
+    aliases: [name.toLowerCase(), ...aliases],
+    isPantry: true, color: '#88a77b',
+  };
+}
+
+// Frontend-owned default pantry, matching the 30 rows in frontend/README.md.
+// TODO(BACKEND): Replace this catalogue with the backend's pantry configuration.
+export const pantryIngredients: Ingredient[] = [
+  pantryIngredient('salt', '🧂', 'Salt', 'Essential Seasonings & Oils'),
+  pantryIngredient('black-pepper', '🌶️', 'Black Pepper', 'Essential Seasonings & Oils', ['pepper']),
+  pantryIngredient('olive-oil', '🫒', 'Olive Oil', 'Essential Seasonings & Oils'),
+  pantryIngredient('vegetable-oil', '🛢️', 'Vegetable Oil', 'Essential Seasonings & Oils', ['oil']),
+  pantryIngredient('water', '💧', 'Water', 'Essential Seasonings & Oils'),
+  pantryIngredient('vinegar', '🍶', 'Vinegar', 'Essential Seasonings & Oils'),
+  pantryIngredient('soy-sauce', '🍶', 'Soy Sauce', 'Essential Seasonings & Oils'),
+  pantryIngredient('mustard', '🌭', 'Mustard', 'Essential Seasonings & Oils'),
+  pantryIngredient('ketchup', '🍅', 'Ketchup', 'Essential Seasonings & Oils'),
+  pantryIngredient('chilli-sauce', '🌶️', 'Chilli Sauce', 'Essential Seasonings & Oils'),
+  pantryIngredient('basil', '🌿', 'Basil', 'Herbs & Spices', ['basil leaves']),
+  pantryIngredient('parsley', '🌱', 'Parsley', 'Herbs & Spices'),
+  pantryIngredient('oregano', '☘️', 'Oregano', 'Herbs & Spices'),
+  pantryIngredient('thyme', '🌿', 'Thyme', 'Herbs & Spices'),
+  pantryIngredient('cinnamon', '🥮', 'Cinnamon', 'Herbs & Spices'),
+  pantryIngredient('cumin', '🟤', 'Cumin', 'Herbs & Spices'),
+  pantryIngredient('paprika', '🌶️', 'Paprika', 'Herbs & Spices'),
+  pantryIngredient('chilli-flakes', '🌶️', 'Chilli Flakes', 'Herbs & Spices', ['red pepper flakes']),
+  pantryIngredient('curry-powder', '🍛', 'Curry Powder', 'Herbs & Spices'),
+  pantryIngredient('turmeric', '🟡', 'Turmeric', 'Herbs & Spices'),
+  pantryIngredient('ground-coriander', '🌿', 'Ground Coriander', 'Herbs & Spices'),
+  pantryIngredient('bay-leaves', '🍃', 'Bay Leaves', 'Herbs & Spices', ['bay leaf']),
+  pantryIngredient('garlic-granules', '🧄', 'Garlic Granules', 'Herbs & Spices'),
+  pantryIngredient('italian-seasoning', '🌿', 'Italian Seasoning', 'Herbs & Spices'),
+  pantryIngredient('baking-powder', '🧁', 'Baking Powder', 'Baking & Cooking Essentials'),
+  pantryIngredient('baking-soda', '🥄', 'Baking Soda', 'Baking & Cooking Essentials'),
+  pantryIngredient('vanilla-extract', '🌼', 'Vanilla Extract', 'Baking & Cooking Essentials'),
+  pantryIngredient('cornstarch', '🌽', 'Cornstarch', 'Baking & Cooking Essentials', ['cornflour']),
+  pantryIngredient('chicken-stock', '🐔', 'Chicken Stock', 'Baking & Cooking Essentials'),
+  pantryIngredient('vegetable-stock-cube', '🥬', 'Vegetable Stock Cube', 'Baking & Cooking Essentials'),
+];
+
+export const allIngredients: Ingredient[] = [...storeIngredients, ...pantryIngredients];
+
+const requirement = (ingredientId: string, amount = 1) => ({ ingredientId, amount });
+
+// Demo recipes and instructions are intentionally frontend-owned for this phase.
+// TODO(BACKEND): Fetch recipes, requirements and cooking steps from recipe endpoints.
+export const dummyRecipes: Recipe[] = [
+  {
+    id: 'herb-broth', name: 'Herb Broth', emoji: '🥣', category: 'Soup', accent: '#79a784',
+    requirements: [requirement('water'), requirement('vegetable-stock-cube'), requirement('thyme'), requirement('black-pepper')],
+    steps: [
+      'Bring a small pot of water to a gentle simmer.',
+      'Stir in the vegetable stock cube until it dissolves.',
+      'Add thyme and black pepper, then simmer for five minutes.',
+      'Taste, adjust the seasoning and serve warm.',
+    ],
+  },
+  {
+    id: 'herb-oil-dip', name: 'Herb Oil Dip', emoji: '🫒', category: 'Quick bites', accent: '#8eae6c',
+    requirements: [requirement('olive-oil'), requirement('oregano'), requirement('garlic-granules'), requirement('salt')],
+    steps: [
+      'Pour olive oil into a small serving bowl.',
+      'Stir in oregano, garlic granules and a pinch of salt.',
+      'Let the herbs infuse for a few minutes, then serve.',
+    ],
+  },
+  {
+    id: 'tomato-toast', name: 'Tomato Toast', emoji: '🍅', category: 'Quick bites', accent: '#df7653',
+    requirements: [requirement('bread'), requirement('tomato'), requirement('olive-oil'), requirement('salt')],
+    steps: [
+      'Toast the bread until golden and crisp.',
+      'Slice the tomato and arrange it over the toast.',
+      'Drizzle with olive oil, sprinkle with salt and serve.',
+    ],
+  },
+  {
+    id: 'cheese-omelette', name: 'Cheese Omelette', emoji: '🍳', category: 'Breakfast', accent: '#e3b853',
+    requirements: [requirement('egg'), requirement('cheese'), requirement('butter'), requirement('salt')],
+    steps: [
+      'Whisk the egg with a pinch of salt.',
+      'Melt butter in a pan over medium heat and pour in the egg.',
+      'Scatter cheese over the egg, fold the omelette and cook until set.',
+    ],
+  },
+  {
+    id: 'spaghetti-arrabbiata', name: 'Spaghetti Arrabbiata', emoji: '🍝', category: 'Pasta', accent: '#d15e45',
+    requirements: [requirement('spaghetti'), requirement('canned-tomatoes'), requirement('garlic'), requirement('chilli'), requirement('olive-oil')],
+    steps: [
+      'Boil the spaghetti in salted water until tender.',
+      'Warm olive oil in a pan and gently cook the garlic and chilli.',
+      'Add canned tomatoes and simmer into a sauce.',
+      'Toss the spaghetti through the sauce and serve.',
+    ],
+  },
+  {
+    id: 'egg-fried-rice', name: 'Egg Fried Rice', emoji: '🍚', category: 'Rice', accent: '#d7a951',
+    requirements: [requirement('rice'), requirement('egg'), requirement('spring-onion'), requirement('soy-sauce')],
+    steps: [
+      'Cook the rice and let it cool slightly.',
+      'Scramble the egg in a hot pan.',
+      'Add rice and chopped spring onion, then stir-fry.',
+      'Season with soy sauce and serve hot.',
+    ],
+  },
+  {
+    id: 'chicken-rice', name: 'Chicken Rice', emoji: '🍗', category: 'Dinner', accent: '#ce8d64',
+    requirements: [requirement('chicken-breast'), requirement('rice'), requirement('garlic'), requirement('olive-oil')],
+    steps: [
+      'Cook the rice according to the packet instructions.',
+      'Slice the chicken and season it.',
+      'Heat olive oil and cook the garlic and chicken until fully cooked.',
+      'Serve the chicken over the rice.',
+    ],
+  },
+];

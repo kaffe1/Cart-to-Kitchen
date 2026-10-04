@@ -1,10 +1,7 @@
-import type { CookingPlaceholder } from './cooking.types';
+import { getDemoRecipe } from '../../recipes/model/recipes.api';
 
-// TODO(BACKEND): Replace this placeholder with cooking-session endpoints.
-export function getCookingPlaceholder(recipeId: string): CookingPlaceholder {
-  return {
-    recipeId: recipeId || 'sample-recipe',
-    title: 'Cooking mode',
-    sampleStep: 'Sample step: prepare the ingredients.',
-  };
+// TODO(BACKEND): Replace the frontend instructions with recipe/cooking-session
+// endpoints. This demo never calls an API or consumes purchased inventory.
+export function getDemoCookingRecipe(recipeId: string) {
+  return getDemoRecipe(recipeId);
 }

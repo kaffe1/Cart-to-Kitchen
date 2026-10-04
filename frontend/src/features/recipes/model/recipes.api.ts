@@ -1,10 +1,6 @@
-import type { RecipePlaceholder } from './recipes.types';
+import { dummyRecipes } from '../../../shared/api/dummyData';
 
-// TODO(BACKEND): Replace this placeholder with the recipe detail endpoint.
-export function getRecipePlaceholder(recipeId: string): RecipePlaceholder {
-  return {
-    id: recipeId || 'sample-recipe',
-    title: 'Recipe details',
-    note: 'Recipe content will be implemented in a later development phase.',
-  };
+// TODO(BACKEND): Read recipe detail from a recipe endpoint when one exists.
+export function getDemoRecipe(recipeId: string) {
+  return dummyRecipes.find((recipe) => recipe.id === recipeId) ?? null;
 }

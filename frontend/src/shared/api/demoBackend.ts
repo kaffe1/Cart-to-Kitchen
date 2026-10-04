@@ -1,7 +1,7 @@
 import type { AppUser } from '../../features/auth/model/auth.types';
 import type { CookingHistoryEntry } from '../../features/cooking/model/cooking.types';
 import type { CounterItem, InventoryItem } from '../../features/kitchen/model/kitchen.types';
-import type { CartLine, ShoppingListItem, Wallet } from '../../features/store/model/store.types';
+import type { CartLine, Wallet } from '../../features/store/model/store.types';
 
 export interface DemoState {
   user: AppUser;
@@ -11,7 +11,6 @@ export interface DemoState {
   counter: CounterItem[];
   favorites: string[];
   history: CookingHistoryEntry[];
-  shoppingList: ShoppingListItem[];
 }
 
 const now = new Date();
@@ -75,7 +74,6 @@ const initialState: DemoState = {
   counter: [],
   favorites: ['spaghetti-arrabbiata'],
   history: [],
-  shoppingList: [],
 };
 
 let state = initialState;
@@ -114,7 +112,6 @@ export function resetDemoState(): void {
     favorites: [...initialState.favorites],
     history: [],
     inventory: initialState.inventory.map((item) => ({ ...item })),
-    shoppingList: [],
   };
   listeners.forEach((listener) => listener());
 }

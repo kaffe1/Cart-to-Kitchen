@@ -302,7 +302,7 @@ export function DesignSystemPage() {
           <section id="shell" className="ds-section">
             <SectionHeader kicker="12 · Patterns" title="Application shell" description="AppShell is the authenticated frame already surrounding this page. It owns global navigation and cross-feature status, never feature business logic." />
             <div className="ds-shell-anatomy"><div className="ds-shell-bar"><span className="brand-mark"><ShoppingBasket size={18} /></span><span className="ds-shell-links"><i>Store</i><i>Kitchen</i><i>Me</i></span><span className="ds-shell-actions"><i>750 SEK</i><i><ShoppingBasket size={14} /></i></span></div><div className="ds-shell-main">Route content</div></div>
-            <ol className="ds-anatomy-list"><li><b>Brand lockup</b><span>Always returns to the Store route.</span></li><li><b>Primary navigation</b><span>Shows active route; moves to a fixed bottom bar at 900px.</span></li><li><b>Global status</b><span>Wallet, cart count and shopping-note count come from the AppShell presenter.</span></li><li><b>Route content</b><span>Feature views render inside main; auth intentionally renders outside the shell.</span></li></ol>
+            <ol className="ds-anatomy-list"><li><b>Brand lockup</b><span>Always returns to the Store route.</span></li><li><b>Primary navigation</b><span>Shows active route; moves to a fixed bottom bar at 900px.</span></li><li><b>Global status</b><span>Wallet and cart count come from the AppShell presenter.</span></li><li><b>Route content</b><span>Feature views render inside main; auth intentionally renders outside the shell.</span></li></ol>
           </section>
 
           <section id="utilities" className="ds-section">

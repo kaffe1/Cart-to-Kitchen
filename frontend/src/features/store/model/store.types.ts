@@ -34,11 +34,6 @@ export interface Wallet {
   hourlyGrantSek: number;
 }
 
-export interface ShoppingListItem {
-  ingredientId: string;
-  sourceRecipeId: string | null;
-}
-
 export interface CheckoutResult {
   purchasedUnits: number;
   spentSek: number;

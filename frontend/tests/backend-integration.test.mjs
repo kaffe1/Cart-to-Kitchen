@@ -4,11 +4,13 @@ import test from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { createAppSession } from '../src/shared/api/appSession.ts';
 import { requestJson } from '../src/shared/api/httpClient.ts';
+import { findDemoDishes } from '../src/features/kitchen/model/kitchen.api.ts';
+import { addIngredientToCounter, getKitchenDemoSnapshot, hydrateKitchenDemo } from '../src/features/kitchen/model/kitchen.demo.ts';
 
 const apiUrl = process.env.CTK_TEST_API_URL;
 
 test(
-  'real backend: cookies, registration, restore, cart, checkout, isolation and logout',
+  'real backend: auth, cart, checkout, purchased inventory and local Kitchen matching',
   { skip: !apiUrl },
   async (t) => {
     const nativeFetch = globalThis.fetch;
@@ -91,6 +93,17 @@ test(
       }),
       { status: 404 },
     );
+
+    // Kitchen combines real purchased stock with a frontend-only counter and
+    // recipe matcher. No Kitchen or recipe endpoint is required by the backend.
+    await reloaded.updateCart('bread', 1);
+    await reloaded.checkout();
+    const kitchenInventory = reloaded.getSnapshot().shopping.inventory;
+    hydrateKitchenDemo(guestId);
+    for (const ingredientId of ['bread', 'tomato', 'olive-oil', 'salt'])
+      addIngredientToCounter(guestId, ingredientId, kitchenInventory);
+    assert.ok(findDemoDishes(kitchenInventory, getKitchenDemoSnapshot()[guestId].counter)
+      .readyNow.some((match) => match.recipe.id === 'tomato-toast'));
 
     const input = {
       email: `acceptance-${randomUUID()}@example.com`,

@@ -4,7 +4,6 @@ import { Button } from '@/shared/components/ui/button';
 import type {
   CartLine,
   Ingredient,
-  ShoppingListItem,
   Wallet,
 } from '../../model/store.types';
 import { getCartUnits } from '../../model/store.rules';
@@ -19,7 +18,6 @@ import { CartPanel } from './CartPanel';
 interface Store3DExperienceProps {
   ingredients: Ingredient[];
   cart: CartLine[];
-  shoppingList: ShoppingListItem[];
   wallet: Wallet;
   total: number;
   isCheckingOut: boolean;
@@ -32,7 +30,6 @@ interface Store3DExperienceProps {
 export function Store3DExperience({
   ingredients,
   cart,
-  shoppingList,
   wallet,
   total,
   isCheckingOut,
@@ -127,7 +124,6 @@ export function Store3DExperience({
         <CartPanel
           cart={cart}
           ingredients={ingredients}
-          shoppingList={shoppingList}
           wallet={wallet}
           total={total}
           isCheckingOut={isCheckingOut}

@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "lint": "oxlint src vite.config.ts",
     "test:store": "node --experimental-strip-types --test tests/store-scene.test.mjs",
+    "test:kitchen": "node --import ./tests/register-typescript.mjs --test tests/kitchen-demo.test.mjs",
     "format": "oxfmt",
     "test:api": "node --import ./tests/register-typescript.mjs --test tests/api-integration.test.mjs",
     "test:backend": "node --import ./tests/register-typescript.mjs --test tests/backend-integration.test.mjs"

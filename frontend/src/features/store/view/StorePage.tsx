@@ -107,7 +107,6 @@ export function StorePage() {
         <Store3DExperience
           ingredients={presenter.ingredients}
           cart={presenter.cart}
-          shoppingList={presenter.shoppingList}
           wallet={presenter.wallet}
           total={presenter.cartTotal}
           isCheckingOut={presenter.isCheckingOut}
@@ -216,7 +215,6 @@ export function StorePage() {
             <CartPanel
               cart={presenter.cart}
               ingredients={presenter.ingredients}
-              shoppingList={presenter.shoppingList}
               wallet={presenter.wallet}
               total={presenter.cartTotal}
               isCheckingOut={presenter.isCheckingOut}

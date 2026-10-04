@@ -24,7 +24,7 @@ function RecipeRoute() {
 
 function CookRoute() {
   const { recipeId = '' } = useParams();
-  return <CookPage recipeId={recipeId} />;
+  return <CookPage key={recipeId} recipeId={recipeId} />;
 }
 
 function ApplicationLayout() {

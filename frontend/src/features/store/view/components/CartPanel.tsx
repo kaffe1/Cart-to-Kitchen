@@ -3,23 +3,19 @@ import {
   Plus,
   ReceiptText,
   ShoppingBasket,
-  StickyNote,
 } from 'lucide-react';
-import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { Progress } from '@/shared/components/ui/progress';
 import { formatSek } from '@/shared/utils/format';
 import type {
   CartLine,
   Ingredient,
-  ShoppingListItem,
   Wallet,
 } from '../../model/store.types';
 
 interface CartPanelProps {
   cart: CartLine[];
   ingredients: Ingredient[];
-  shoppingList: ShoppingListItem[];
   wallet: Wallet;
   total: number;
   isCheckingOut: boolean;
@@ -31,7 +27,6 @@ interface CartPanelProps {
 export function CartPanel({
   cart,
   ingredients,
-  shoppingList,
   wallet,
   total,
   isCheckingOut,
@@ -70,18 +65,6 @@ export function CartPanel({
           {wallet.capSek} SEK
         </p>
       </div>
-
-      {shoppingList.length > 0 && (
-        <div className="shopping-note">
-          <StickyNote size={17} />
-          <div>
-            <strong>Kitchen note</strong>
-            <p>
-              {shoppingList.length} missing ingredient(s) are waiting below.
-            </p>
-          </div>
-        </div>
-      )}
 
       <section className="cart-lines" aria-label="Cart items">
         {cart.length === 0 ? (
@@ -136,20 +119,6 @@ export function CartPanel({
               </div>
             );
           })
-        )}
-        {shoppingList.length > 0 && (
-          <div className="note-items">
-            {shoppingList.map((entry) => {
-              const item = ingredients.find(
-                (ingredient) => ingredient.id === entry.ingredientId,
-              );
-              return item ? (
-                <Badge key={entry.ingredientId} variant="outline">
-                  {item.emoji} {item.name}
-                </Badge>
-              ) : null;
-            })}
-          </div>
         )}
       </section>
 
