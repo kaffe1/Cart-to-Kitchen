@@ -9,18 +9,30 @@ interface IngredientCardProps {
   onAdd: (ingredientId: string) => void;
   onSelect?: (ingredientId: string) => void;
   compact?: boolean;
+  disabled?: boolean;
 }
 
-export function IngredientCard({ ingredient, onAdd, onSelect, compact }: IngredientCardProps) {
+export function IngredientCard({
+  ingredient,
+  onAdd,
+  onSelect,
+  compact,
+  disabled,
+}: IngredientCardProps) {
   return (
-    <article className={compact ? 'ingredient-card compact' : 'ingredient-card'}>
+    <article
+      className={compact ? 'ingredient-card compact' : 'ingredient-card'}
+    >
       <button
         type="button"
         className="ingredient-card-main"
         onClick={() => onSelect?.(ingredient.id)}
         aria-label={`View ${ingredient.name}`}
       >
-        <span className="ingredient-emoji" style={{ backgroundColor: `${ingredient.color}22` }}>
+        <span
+          className="ingredient-emoji"
+          style={{ backgroundColor: `${ingredient.color}22` }}
+        >
           {ingredient.emoji}
         </span>
         <span className="ingredient-copy">
@@ -32,7 +44,12 @@ export function IngredientCard({ ingredient, onAdd, onSelect, compact }: Ingredi
         <Badge variant="outline">{ingredient.usesPerUnit} uses</Badge>
         <strong>{formatSek(ingredient.priceSek)}</strong>
       </div>
-      <Button size="sm" onClick={() => onAdd(ingredient.id)} aria-label={`Add ${ingredient.name} to cart`}>
+      <Button
+        size="sm"
+        disabled={disabled}
+        onClick={() => onAdd(ingredient.id)}
+        aria-label={`Add ${ingredient.name} to cart`}
+      >
         <Plus size={16} /> Add
       </Button>
     </article>

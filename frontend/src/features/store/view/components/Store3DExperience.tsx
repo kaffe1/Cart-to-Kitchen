@@ -23,8 +23,9 @@ interface Store3DExperienceProps {
   wallet: Wallet;
   total: number;
   isCheckingOut: boolean;
+  isUpdatingCart: boolean;
   onAdd: (ingredientId: string) => Promise<boolean>;
-  onQuantityChange: (ingredientId: string, quantity: number) => void;
+  onQuantityChange: (ingredientId: string, delta: number) => void;
   onCheckout: () => void;
 }
 
@@ -35,6 +36,7 @@ export function Store3DExperience({
   wallet,
   total,
   isCheckingOut,
+  isUpdatingCart,
   onAdd,
   onQuantityChange,
   onCheckout,
@@ -129,6 +131,7 @@ export function Store3DExperience({
           wallet={wallet}
           total={total}
           isCheckingOut={isCheckingOut}
+          isUpdatingCart={isUpdatingCart}
           onQuantityChange={onQuantityChange}
           onCheckout={onCheckout}
         />

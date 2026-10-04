@@ -12,7 +12,7 @@ This directory contains the React frontend for Cart to Kitchen. It is a standalo
 - React Three Fiber
 - dnd-kit
 
-The backend is intentionally not implemented here. Temporary in-memory data keeps the frontend usable while the Python API is being developed.
+Auth and Store use the FastAPI backend in `../backend`. User sessions, wallet balances, carts and purchased inventory are restored from the server. Kitchen, Recipes, Cooking and Profile remain placeholders.
 
 ## Commands
 
@@ -21,6 +21,7 @@ npm install
 npm run dev
 npm run lint
 npm run test:store
+npm run test:api
 npm run build
 npm run preview
 ```
@@ -163,15 +164,51 @@ It uses Node's built-in test runner and TypeScript stripping
 
 ## Backend integration
 
-Copy `.env.example` to `.env` and set the Python API base URL when a backend is available:
+Start the backend from the repository root:
+
+```sh
+docker compose -f backend/compose.yaml up --build
+```
+
+The Vite development server proxies `/api/v1` to `http://127.0.0.1:8000`, so no
+frontend `.env` is needed for the default local setup. Restart Vite after changing
+its configuration. To call the backend directly, copy `.env.example` to `.env`:
 
 ```env
 VITE_API_BASE_URL=http://localhost:8000/api/v1
 ```
 
-All pending integration points are marked with `TODO(BACKEND)` in feature-level `model/*.api.ts` files. The shared request helper is `src/shared/api/httpClient.ts`.
+Use the same hostname on both sides (`localhost` on both, or `127.0.0.1` on both),
+and include the frontend origin in `CTK_ALLOWED_ORIGINS`. Requests include the
+backend's HttpOnly session cookie. Production hosting must either proxy `/api/v1`
+to the backend or provide `VITE_API_BASE_URL` at build time; the Vite dev proxy is
+not part of the production bundle.
 
-The current dummy state is held in memory. Refreshing the page resets guest progress. Financial, inventory, authentication, favorite, and cooking-history data must use the backend as the source of truth after integration.
+`shared/api/appSession.ts` owns a synchronous, subscribable cache of server data.
+Startup restores `/auth/me`; entering the application without a session creates
+one guest, including under React StrictMode. Cart writes are serialized, and
+checkout reloads the active shopping session to obtain the new ID and inventory.
+Identity changes clear prior user data and discard stale request results. Network
+failures show retry controls rather than falling back to mock data.
+
+`dummyData.ts` remains a fixture for the 3D asset tests. `demoBackend.ts` is no
+longer imported by runtime features. Shopping notes remain empty because the
+backend has no endpoint for them. The wallet is not polled: the backend currently
+loses partial accrual intervals on reads (see the phase-one report).
+
+Run deterministic request/state tests with `npm run test:api`. To run the real
+HTTP integration test, explicitly target a **disposable local database**; this
+test creates accounts, carts and purchases:
+
+```sh
+CTK_TEST_API_URL=http://127.0.0.1:8000/api/v1 npm run test:backend
+```
+
+Without `CTK_TEST_API_URL`, that test is skipped. Tests use the existing TypeScript
+compiler and Node test runner; no new npm dependency is required.
+
+The detailed implementation and acceptance report is in
+[`../INTEGRATION_REPORT_PHASE1.md`](../INTEGRATION_REPORT_PHASE1.md).
 
 ## Routes
 
@@ -182,8 +219,8 @@ The current dummy state is held in memory. Refreshing the page resets guest prog
 | `/recipes/:recipeId` | Minimal Recipe placeholder with a sample ID                          |
 | `/cook/:recipeId`    | Minimal Cooking placeholder with a sample step                       |
 | `/me`                | Minimal Profile placeholder                                          |
-| `/login`             | Sign in through the temporary frontend flow                          |
-| `/register`          | Create an account through the temporary frontend flow                |
+| `/login`             | Sign in with the backend session cookie                          |
+| `/register`          | Register a persisted account                |
 | `/design-system`     | Development-only reference for global tokens and shared components   |
 
 Store and Auth are the active feature implementations. Kitchen, Recipes, Cooking, and Profile intentionally contain only small MVP placeholders for later development.

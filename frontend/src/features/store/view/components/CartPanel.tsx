@@ -23,7 +23,8 @@ interface CartPanelProps {
   wallet: Wallet;
   total: number;
   isCheckingOut: boolean;
-  onQuantityChange: (ingredientId: string, quantity: number) => void;
+  isUpdatingCart: boolean;
+  onQuantityChange: (ingredientId: string, delta: number) => void;
   onCheckout: () => void;
 }
 
@@ -34,6 +35,7 @@ export function CartPanel({
   wallet,
   total,
   isCheckingOut,
+  isUpdatingCart,
   onQuantityChange,
   onCheckout,
 }: CartPanelProps) {
@@ -113,7 +115,8 @@ export function CartPanel({
                 >
                   <button
                     type="button"
-                    onClick={() => onQuantityChange(item.id, line.quantity - 1)}
+                    onClick={() => onQuantityChange(item.id, -1)}
+                    disabled={isCheckingOut || isUpdatingCart}
                     aria-label={`Remove one ${item.name}`}
                   >
                     <Minus size={14} />
@@ -121,7 +124,10 @@ export function CartPanel({
                   <span>{line.quantity}</span>
                   <button
                     type="button"
-                    onClick={() => onQuantityChange(item.id, line.quantity + 1)}
+                    onClick={() => onQuantityChange(item.id, 1)}
+                    disabled={
+                      isCheckingOut || isUpdatingCart || line.quantity >= 9
+                    }
                     aria-label={`Add one ${item.name}`}
                   >
                     <Plus size={14} />
@@ -151,10 +157,16 @@ export function CartPanel({
         className="cart-checkout w-full"
         size="lg"
         onClick={onCheckout}
-        disabled={cart.length === 0 || remaining < 0 || isCheckingOut}
+        disabled={
+          cart.length === 0 || remaining < 0 || isCheckingOut || isUpdatingCart
+        }
       >
         <ReceiptText size={18} />{' '}
-        {isCheckingOut ? 'Checking out…' : `Checkout · ${formatSek(total)}`}
+        {isCheckingOut
+          ? 'Checking out…'
+          : isUpdatingCart
+            ? 'Updating cart…'
+            : `Checkout · ${formatSek(total)}`}
       </Button>
     </aside>
   );
