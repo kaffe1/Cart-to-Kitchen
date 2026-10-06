@@ -10,6 +10,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    LargeBinary,
     Text,
     UniqueConstraint,
 )
@@ -92,3 +93,29 @@ class Wallet(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
     balance_sek: Mapped[int] = mapped_column(Integer)
     last_accrued_at: Mapped[datetime] = mapped_column(DateTime)
+
+
+class CookHistory(Base):
+    """One successfully cooked meal; a review (text + optional photo) can be
+    attached afterwards from the profile page."""
+
+    __tablename__ = "cook_history"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    meal_id: Mapped[str] = mapped_column(Text)
+    meal_name: Mapped[str] = mapped_column(Text)
+    cooked_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    review_text: Mapped[str | None] = mapped_column(Text)
+    review_image: Mapped[bytes | None] = mapped_column(LargeBinary)
+    review_image_type: Mapped[str | None] = mapped_column(Text)
+
+
+class Avatar(Base):
+    """At most one normalised PNG/JPEG image per user."""
+
+    __tablename__ = "avatars"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    media_type: Mapped[str] = mapped_column(Text)
+    image_data: Mapped[bytes] = mapped_column(LargeBinary)

@@ -1,0 +1,1125 @@
+{
+  "info": {
+    "name": "Cart to Kitchen API",
+    "description": "Automated API tests for the Cart to Kitchen backend (DH2643 group 5). Ordered journeys: auth -> store/checkout -> recipes/match/cook -> kitchen -> profile/avatar/review. A random email per run keeps it repeatable. Run headless from backend/: `npx newman run postman/cart-to-kitchen.postman_collection.json -e postman/local.postman_environment.json`. For scheduled runs with failure notifications create a Postman Monitor on the collection (e.g. every 10 minutes).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "userEmail",
+      "value": ""
+    },
+    {
+      "key": "userPassword",
+      "value": "postman-test-1"
+    },
+    {
+      "key": "displayName",
+      "value": "Postman Runner"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "sessionId",
+      "value": ""
+    },
+    {
+      "key": "idempotencyKey",
+      "value": ""
+    },
+    {
+      "key": "balanceBefore",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/healthz",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "healthz"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"healthz returns ok\", () => {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.json().status).to.eql(\"ok\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Unauthenticated access rejected",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"missing token gives 401\", () => {",
+              "  pm.response.to.have.status(401);",
+              "  pm.expect(pm.response.json().error.code).to.eql(\"auth_required\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/shopping-sessions/active",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "shopping-sessions",
+            "active"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Register",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"userEmail\", `postman-${Date.now()}@test.dev`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"register creates an account\", () => {",
+              "  pm.response.to.have.status(201);",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.user.mode).to.eql(\"account\");",
+              "  pm.expect(body.user.email).to.eql(pm.collectionVariables.get(\"userEmail\"));",
+              "  pm.expect(body.accessToken).to.be.a(\"string\").and.not.empty;",
+              "});",
+              "pm.collectionVariables.set(\"accessToken\", pm.response.json().accessToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\",\n  \"displayName\": \"{{displayName}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"login returns the same user\", () => {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.json().user.email).to.eql(pm.collectionVariables.get(\"userEmail\"));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Login wrong password rejected",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"wrong password gives 401 with a code\", () => {",
+              "  pm.response.to.have.status(401);",
+              "  pm.expect(pm.response.json().error.code).to.eql(\"invalid_credentials\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"definitely-wrong\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Ingredients catalogue (sellable + pantry)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"catalogue carries the full TheMealDB pantry\", () => {",
+              "  pm.response.to.have.status(200);",
+              "  const items = pm.response.json();",
+              "  pm.expect(items.length).to.be.at.least(980);",
+              "  const sellable = items.filter(i => !i.isPantry);",
+              "  pm.expect(sellable).to.have.lengthOf(80);",
+              "  const tomato = items.find(i => i.id === \"tomato\");",
+              "  pm.expect(tomato.priceSek).to.eql(18);",
+              "  pm.expect(tomato.usesPerUnit).to.eql(3);",
+              "  const oil = items.find(i => i.id === \"olive-oil\");",
+              "  pm.expect(oil.isPantry).to.eql(true);",
+              "  pm.expect(oil.usesPerUnit).to.eql(\"infinite\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/ingredients",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "ingredients"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Active shopping session",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"session snapshot is well formed\", () => {",
+              "  pm.response.to.have.status(200);",
+              "  const s = pm.response.json();",
+              "  pm.expect(s.status).to.eql(\"active\");",
+              "  pm.expect(s.wallet.balanceSek).to.be.at.least(500);",
+              "  pm.expect(s.wallet.capSek).to.eql(3000);",
+              "  pm.expect(s.wallet.hourlyGrantSek).to.eql(100);",
+              "});",
+              "pm.collectionVariables.set(\"sessionId\", pm.response.json().id);",
+              "pm.collectionVariables.set(\"balanceBefore\", pm.response.json().wallet.balanceSek);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/shopping-sessions/active",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "shopping-sessions",
+            "active"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Add tomatoes to cart",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"cart contains tomato x2\", () => {",
+              "  pm.response.to.have.status(200);",
+              "  const line = pm.response.json().find(l => l.ingredientId === \"tomato\");",
+              "  pm.expect(line.quantity).to.eql(2);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"quantity\": 2\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/shopping-sessions/{{sessionId}}/items/tomato",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "shopping-sessions",
+            "{{sessionId}}",
+            "items",
+            "tomato"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Pantry ingredients are not for sale",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/shopping-sessions/{{sessionId}}/items/olive-oil",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "shopping-sessions",
+            "{{sessionId}}",
+            "items",
+            "olive-oil"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"pantry item rejected with NOT_FOR_SALE\", () => {",
+              "  pm.response.to.have.status(422);",
+              "  pm.expect(pm.response.json().error.details.code).to.eql(\"NOT_FOR_SALE\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Checkout",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"checkout charges exactly 2 x 18 SEK\", () => {",
+              "  pm.response.to.have.status(200);",
+              "  const r = pm.response.json();",
+              "  pm.expect(r.purchasedUnits).to.eql(2);",
+              "  pm.expect(r.spentSek).to.eql(36);",
+              "  pm.expect(r.remainingBalanceSek).to.eql(Number(pm.collectionVariables.get(\"balanceBefore\")) - 36);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/shopping-sessions/{{sessionId}}/checkout",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "shopping-sessions",
+            "{{sessionId}}",
+            "checkout"
+          ]
+        }
+      }
+    },
+    {
+      "name": "New session after checkout",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"fresh session with empty cart and stocked inventory\", () => {",
+              "  pm.response.to.have.status(200);",
+              "  const s = pm.response.json();",
+              "  pm.expect(s.id).to.not.eql(Number(pm.collectionVariables.get(\"sessionId\")));",
+              "  pm.expect(s.cart).to.be.empty;",
+              "  const tomato = s.inventory.find(i => i.ingredientId === \"tomato\");",
+              "  pm.expect(tomato.remainingUses).to.be.at.least(6);",
+              "  pm.expect(s.wallet.balanceSek).to.eql(Number(pm.collectionVariables.get(\"balanceBefore\")) - 36);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/shopping-sessions/active",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "shopping-sessions",
+            "active"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Recipes search",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/recipes?search=chicken",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "recipes?search=chicken"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"search returns meals\", () => {",
+              "  pm.response.to.have.status(200);",
+              "  const meals = pm.response.json();",
+              "  pm.expect(meals.length).to.be.at.least(1);",
+              "  pm.expect(meals[0]).to.have.keys('id','name','thumbUrl');",
+              "});",
+              "if (pm.response.json().length) pm.collectionVariables.set('mealId', pm.response.json()[0].id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Recipe detail",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/recipes/{{mealId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "recipes",
+            "{{mealId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"detail has instructions and ingredients\", () => {",
+              "  pm.response.to.have.status(200);",
+              "  const d = pm.response.json();",
+              "  pm.expect(d.ingredients.length).to.be.at.least(1);",
+              "  pm.expect(d.instructions).to.be.a('string');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Three-tier match",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/recipes/matches?search=chicken",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "recipes",
+            "matches?search=chicken"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"match buckets are present\", () => {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.json()).to.have.keys('ready','almost','needShopping');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cook unknown recipe rejected",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/recipes/999999/cook",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "recipes",
+            "999999",
+            "cook"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"unknown recipe gives 404\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cook real recipe (200 or missing-ingredients)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/recipes/{{mealId}}/cook",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "recipes",
+            "{{mealId}}",
+            "cook"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"cook either succeeds or explains what is missing\", () => {",
+              "  pm.expect([200, 422]).to.include(pm.response.code);",
+              "  if (pm.response.code === 200) {",
+              "    const h = pm.response.json();",
+              "    pm.expect(h.recipeId).to.eql(pm.collectionVariables.get('mealId'));",
+              "    pm.collectionVariables.set('historyId', h.id);",
+              "  }",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Kitchen inventory",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/kitchen/inventory",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "kitchen",
+            "inventory"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"inventory is a list of stock lines\", () => {",
+              "  pm.response.to.have.status(200);",
+              "  const lines = pm.response.json();",
+              "  pm.expect(Array.isArray(lines)).to.be.true;",
+              "  lines.forEach(l => pm.expect(l).to.have.keys('ingredientId','remainingUses'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update display name",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "me"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"displayName\": \"Runner Renamed\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"display name changes\", () => {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.json().displayName).to.eql('Runner Renamed');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wrong current password rejected",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "me"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"newPassword\": \"new-pass-123\", \"currentPassword\": \"nope\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"password change needs the right current password\", () => {",
+              "  pm.response.to.have.status(401);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "History list",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/history",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "history"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"history is a list\", () => {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(Array.isArray(pm.response.json())).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Review on unknown entry rejected",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/history/999999/review",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "history",
+            "999999",
+            "review"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "text",
+              "value": "nice",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"foreign entry reads as 404\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profanity filtered by regex",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/history/999998/review",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "history",
+            "999998",
+            "review"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "text",
+              "value": "this is crap",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"profanity is rejected before the 404 lookup matters\", () => {",
+              "  pm.expect([404, 422]).to.include(pm.response.code);",
+              "  if (pm.response.code === 422)",
+              "    pm.expect(pm.response.json().error.details.code).to.eql('PROFANITY_REJECTED');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Avatar upload",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/me/avatar",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "me",
+            "avatar"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": "postman/avatar.png"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"avatar accepted and profile exposes its URL\", () => {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.json().avatarUrl).to.eql('/api/v1/me/avatar');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Avatar download",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/me/avatar",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "me",
+            "avatar"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"avatar bytes come back as PNG\", () => {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.headers.get('Content-Type')).to.include('image/png');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Avatar rejects non-images",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/me/avatar",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "me",
+            "avatar"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": "postman/avatar.png.txt"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"non-image upload rejected\", () => {",
+              "  pm.response.to.have.status(422);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

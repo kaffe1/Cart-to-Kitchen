@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
-from .api import routes_auth, routes_store
+from .api import routes_auth, routes_profile, routes_recipes, routes_store
 from .config import get_settings
 from .db import bootstrap, make_engine, make_session_factory
 from .errors import AppError
@@ -58,6 +58,8 @@ def create_app() -> FastAPI:
 
     app.include_router(routes_auth.router, prefix="/api/v1")
     app.include_router(routes_store.router, prefix="/api/v1")
+    app.include_router(routes_recipes.router, prefix="/api/v1")
+    app.include_router(routes_profile.router, prefix="/api/v1")
 
     return app
 

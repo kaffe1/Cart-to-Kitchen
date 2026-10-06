@@ -35,6 +35,11 @@ def set_cart_quantity(
     )
 
 
+@router.get("/kitchen/inventory")
+def kitchen_inventory(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    return store_service.kitchen_inventory(db, user)
+
+
 @router.post("/shopping-sessions/{session_id}/checkout")
 def checkout(
     session_id: int,

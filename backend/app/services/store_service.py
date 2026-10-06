@@ -49,16 +49,13 @@ def _wallet_public(wallet) -> dict:
     }
 
 
-def active_session(db: Session, user: User) -> dict:
-    # Wallet grants accrue on every read of the shopping snapshot.
-    wallet = wallet_service.apply_grants(db, user.id)
+def inventory_public(db: Session, user_id: int) -> list[dict]:
     repo = ShoppingRepository(db)
-    trip = repo.active_session(user.id) or repo.create_session(user.id)
-    stock_rows = repo.inventory_lines(user.id)
+    stock_rows = repo.inventory_lines(user_id)
     catalogue = IngredientRepository(db).by_ids(
         [row.ingredient_id for row in stock_rows]
     )
-    inventory = [
+    return [
         {
             "ingredientId": row.ingredient_id,
             # Pantry ingredients (null uses_per_unit) have unlimited uses.
@@ -71,6 +68,13 @@ def active_session(db: Session, user: User) -> dict:
         }
         for row in stock_rows
     ]
+
+
+def active_session(db: Session, user: User) -> dict:
+    # Wallet grants accrue on every read of the shopping snapshot.
+    wallet = wallet_service.apply_grants(db, user.id)
+    repo = ShoppingRepository(db)
+    trip = repo.active_session(user.id) or repo.create_session(user.id)
     return {
         "id": trip.id,
         "status": trip.status,
@@ -80,7 +84,7 @@ def active_session(db: Session, user: User) -> dict:
             {"ingredientId": line.ingredient_id, "quantity": line.quantity}
             for line in repo.cart_lines(trip.id)
         ],
-        "inventory": inventory,
+        "inventory": inventory_public(db, user.id),
     }
 
 
@@ -89,7 +93,12 @@ def set_cart_quantity(
 ) -> list[dict]:
     repo = ShoppingRepository(db)
     trip = repo.owned_active_session(session_id, user.id)
-    IngredientRepository(db).by_id(ingredient_id)  # 404 on unknown slug
+    ingredient = IngredientRepository(db).by_id(ingredient_id)  # 404 on unknown slug
+    if ingredient.is_pantry:
+        raise RuleValidation(
+            "Pantry ingredients are always in your kitchen.",
+            details={"code": "NOT_FOR_SALE"},
+        )
     quantity = max(0, min(quantity, MAX_QUANTITY_PER_ITEM))
     line = repo.cart_item(trip.id, ingredient_id)
     if quantity == 0:
@@ -150,3 +159,8 @@ def checkout(db: Session, user: User, session_id: int) -> dict:
         "spentSek": total,
         "remainingBalanceSek": wallet.balance_sek,
     }
+
+
+def kitchen_inventory(db: Session, user: User) -> list[dict]:
+    """The kitchen's view of what is in stock."""
+    return inventory_public(db, user.id)

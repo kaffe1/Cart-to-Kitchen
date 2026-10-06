@@ -27,3 +27,10 @@ class LoginInput(CamelModel):
 
 class QuantityInput(CamelModel):
     quantity: Annotated[int, Field(ge=0, le=99)]
+
+
+class UpdateMeInput(CamelModel):
+    display_name: str | None = Field(alias="displayName", default=None, min_length=1, max_length=40)
+    email: EmailStr | None = None
+    new_password: str | None = Field(alias="newPassword", default=None, min_length=6, max_length=128)
+    current_password: str | None = Field(alias="currentPassword", default=None)
