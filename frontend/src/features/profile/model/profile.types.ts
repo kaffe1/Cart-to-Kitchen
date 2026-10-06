@@ -1,5 +1,5 @@
 export interface ProfilePlaceholder {
-  displayName: string;
+  username: string;
   mode: string;
   note: string;
   cookingHistory: CookedRecipe[];
