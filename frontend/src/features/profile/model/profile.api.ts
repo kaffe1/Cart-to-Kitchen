@@ -1,7 +1,7 @@
 import type { ProfilePlaceholder } from "./profile.types";
 
 const profilePlaceholder: ProfilePlaceholder = {
-  displayName: "Guest cook",
+  username: "Guest cook",
   mode: "Guest mode",
   note: "Profile features will be implemented in a later development phase.",
   cookingHistory: [

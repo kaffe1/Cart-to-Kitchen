@@ -40,6 +40,15 @@ export function useProfilePresenter() {
     setAvatarDialogOpen(false);
   };
 
+  // TODO: Implement the actual save logic when backend is in place
+   const handleUsernameSave = (newUsername: string) => {
+    setProfile((prev) => ({
+      ...prev,
+      username: newUsername,
+    }));
+    closeUsernameDialog();
+  };
+
   return {
     profile,
     isUsernameDialogOpen,
@@ -54,5 +63,6 @@ export function useProfilePresenter() {
     isAvatarDialogOpen,
     openAvatarDialog,
     closeAvatarDialog,
+    handleUsernameSave,
   };
 }

@@ -21,10 +21,12 @@ export function ProfilePage() {
     isAvatarDialogOpen,
     openAvatarDialog,
     closeAvatarDialog,
+    handleUsernameSave,
   } = useProfilePresenter();
 
   return (
     <section className="page-shell placeholder-page">
+      <h1>Hello {profile.username}!</h1>
       <div className="flex flex-row justify-between">
         <ProfilePanel
           profile={profile}
@@ -44,7 +46,9 @@ export function ProfilePage() {
 
       <UsernameDialog
         open={isUsernameDialogOpen}
+        currentUsername={profile.username}
         onClose={closeUsernameDialog}
+        onSave={handleUsernameSave}
       />
       <EmailDialog open={isEmailDialogOpen} onClose={closeEmailDialog} />
       <PasswordDialog
