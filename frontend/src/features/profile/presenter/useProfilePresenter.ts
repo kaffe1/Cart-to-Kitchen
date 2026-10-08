@@ -41,12 +41,21 @@ export function useProfilePresenter() {
   };
 
   // TODO: Implement the actual save logic when backend is in place
-   const handleUsernameSave = (newUsername: string) => {
+  const handleUsernameSave = (newUsername: string) => {
     setProfile((prev) => ({
       ...prev,
       username: newUsername,
     }));
     closeUsernameDialog();
+  };
+
+  // TODO: Implement the actual save logic when backend is in place
+  const handleEmailSave = (newEmail: string) => {
+    setProfile((prev) => ({
+      ...prev,
+      email: newEmail,
+    }));
+    closeEmailDialog();
   };
 
   return {
@@ -64,5 +73,6 @@ export function useProfilePresenter() {
     openAvatarDialog,
     closeAvatarDialog,
     handleUsernameSave,
+    handleEmailSave,
   };
 }
