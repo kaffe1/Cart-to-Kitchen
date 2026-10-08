@@ -1,27 +1,27 @@
-import { UsernameDialog } from "./UsernameDialog";
+import { EmailDialog } from "./EmailDialog";
 
-describe("<UsernameDialog />", () => {
-  it("calls onSave with the entered username when save is clicked", () => {
+describe("<EmailDialog />", () => {
+  it("calls onSave with the entered email when save is clicked", () => {
     const onSave = cy.stub().as("onSave");
     cy.mount(
-      <UsernameDialog
+      <EmailDialog
         open={true}
-        currentUsername="old-name"
-        onClose={cy.stub()}
+        currentEmail="oldEmail@example.com"
         onSave={onSave}
+        onClose={cy.stub()}
       />,
     );
-    cy.get("input").clear().type("new-name");
+    cy.get("input").clear().type("newEmail@example.com");
     cy.contains("button", "Save").click();
-    cy.get("@onSave").should("have.been.calledWith", "new-name");
+    cy.get("@onSave").should("have.been.calledWith", "newEmail@example.com");
   });
 
   it("calls onClose when Cancel is clicked", () => {
     const onClose = cy.stub().as("onClose");
     cy.mount(
-      <UsernameDialog
+      <EmailDialog
         open
-        currentUsername="old-name"
+        currentEmail="a@b.se"
         onSave={cy.stub()}
         onClose={onClose}
       />,

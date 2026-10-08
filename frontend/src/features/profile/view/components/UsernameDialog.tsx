@@ -5,10 +5,10 @@ import {
   DialogFooter,
   DialogTitle,
   DialogClose,
-} from '@/shared/components/ui/dialog';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { useState } from 'react';
+} from "@/shared/components/ui/dialog";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { useState } from "react";
 
 type UsernameDialogProps = {
   open: boolean;
@@ -17,18 +17,16 @@ type UsernameDialogProps = {
   onClose: () => void;
 };
 
-
 export function UsernameDialog({
-    open,
-    currentUsername,
-    onSave,
-    onClose,
+  open,
+  currentUsername,
+  onSave,
+  onClose,
 }: UsernameDialogProps) {
-    
-    const [newUsername, setNewUsername] = useState(currentUsername);
-    const handleSaveCB = () => {
-        onSave(newUsername);
-    }
+  const [newUsername, setNewUsername] = useState(currentUsername);
+  const handleSaveCB = () => {
+    onSave(newUsername);
+  };
 
   return (
     <Dialog
@@ -43,9 +41,9 @@ export function UsernameDialog({
         </DialogHeader>
 
         <Input
-            placeholder="New Username"
-            value={newUsername}
-            onChange={(e) => setNewUsername(e.target.value)}
+          placeholder="New Username"
+          value={newUsername}
+          onChange={(e) => setNewUsername(e.target.value)}
         />
 
         <DialogFooter>
