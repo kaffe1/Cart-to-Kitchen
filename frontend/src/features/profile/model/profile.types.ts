@@ -1,12 +1,13 @@
 export interface ProfilePlaceholder {
   username: string;
+  email: string;
   mode: string;
   note: string;
   cookingHistory: CookedRecipe[];
 }
 
 /* export type Profile = {
-  displayName: string;
+  username: string;
   email: string;
   avatar: Avatar;
   cookingHistory: CookedRecipe[];
