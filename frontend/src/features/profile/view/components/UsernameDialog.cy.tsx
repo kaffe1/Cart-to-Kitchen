@@ -11,8 +11,22 @@ describe("<UsernameDialog />", () => {
         onSave={onSave}
       />,
     );
-    cy.get('input').clear().type('new-name')
-    cy.contains('button', 'Save').click()
-    cy.get('@onSave').should('have.been.calledWith', 'new-name')
+    cy.get("input").clear().type("new-name");
+    cy.contains("button", "Save").click();
+    cy.get("@onSave").should("have.been.calledWith", "new-name");
+  });
+
+  it("calls onClose when Cancel is clicked", () => {
+    const onClose = cy.stub().as("onClose");
+    cy.mount(
+      <UsernameDialog
+        open
+        currentUsername="old-name"
+        onSave={cy.stub()}
+        onClose={onClose}
+      />,
+    );
+    cy.contains("button", "Cancel").click();
+    cy.get("@onClose").should("have.been.called");
   });
 });
