@@ -48,3 +48,10 @@ class RuleValidation(AppError):
 
     status_code = 422
     code = "rule_validation"
+
+
+class ExternalApi(AppError):
+    """An upstream service (TheMealDB) failed."""
+
+    status_code = 502
+    code = "external_api_error"

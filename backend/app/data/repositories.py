@@ -10,7 +10,9 @@ from sqlalchemy.orm import Session
 
 from ..errors import Conflict, NotFound
 from .models import (
+    Avatar,
     CartItem,
+    CookHistory,
     Ingredient,
     InventoryItem,
     ShoppingSession,
@@ -139,6 +141,42 @@ class ShoppingRepository:
         self.session.add(wallet)
         self.session.flush()
         return wallet
+
+    # --- cooking history & avatars -----------------------------------------
+
+    def history(self, user_id: int) -> list[CookHistory]:
+        return list(
+            self.session.scalars(
+                select(CookHistory)
+                .where(CookHistory.user_id == user_id)
+                .order_by(CookHistory.cooked_at.desc())
+            )
+        )
+
+    def history_entry(self, user_id: int, entry_id: int) -> CookHistory:
+        entry = self.session.get(CookHistory, entry_id)
+        if entry is None or entry.user_id != user_id:
+            raise NotFound("history entry not found")
+        return entry
+
+    def add_history(self, user_id: int, *, meal_id: str, meal_name: str) -> CookHistory:
+        entry = CookHistory(user_id=user_id, meal_id=meal_id, meal_name=meal_name)
+        self.session.add(entry)
+        self.session.flush()
+        return entry
+
+    def avatar(self, user_id: int) -> Avatar | None:
+        return self.session.get(Avatar, user_id)
+
+    def set_avatar(self, user_id: int, *, media_type: str, image_data: bytes) -> None:
+        row = self.session.get(Avatar, user_id)
+        if row is None:
+            self.session.add(
+                Avatar(user_id=user_id, media_type=media_type, image_data=image_data)
+            )
+        else:
+            row.media_type = media_type
+            row.image_data = image_data
 
 
 def ingredient_aliases(row: Ingredient) -> list[str]:

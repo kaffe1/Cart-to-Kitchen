@@ -1,8 +1,9 @@
 # Cart to Kitchen Backend
 
-Python (FastAPI) backend for Cart to Kitchen: a minimal first version covering
-authentication, the ingredient catalogue and the shopping flow (cart + checkout
-with the wallet economy), persisting to PostgreSQL and deployable with Docker.
+Python (FastAPI) backend for Cart to Kitchen: authentication, the ingredient
+catalogue, the shopping flow with the wallet economy, recipes via TheMealDB
+with the three-tier match, cooking, and the profile page (settings, avatar,
+history with reviews). PostgreSQL persistence, one-command Docker start.
 
 ## Quick start (Docker)
 
@@ -25,33 +26,47 @@ pip install -e ".[dev]"
 uvicorn app.main:app --reload   # needs a PostgreSQL at CTK_DATABASE_URL
 ```
 
-The app creates its tables and seeds the ingredient catalogue on startup.
+Tables and the ingredient catalogue are created/seeded on startup.
 
 ## Testing
 
+**Postman — the HTTP test suite** (ordered journeys: auth → store/checkout →
+recipes/match/cook → kitchen → profile/avatar/review). Run headless from
+`backend/` against a running stack:
+
 ```bash
-pip install -e ".[dev]"
-pytest
+docker compose up -d
+npx newman run postman/cart-to-kitchen.postman_collection.json \
+  -e postman/local.postman_environment.json
 ```
 
-Tests run against an in-memory SQLite database (the schema stays portable on
-purpose), so they need no running services. They cover the auth flows (cookie
-and Bearer), the catalogue shape, cart rules, ownership isolation, the wallet
-grant math and the full checkout transaction. A Postman collection with
-scheduled runs — as the proposal promises — lands in week 2.
+For scheduled runs with failure notifications, create a **Postman Monitor** on
+the collection (e.g. every 10 minutes).
+
+**pytest — pure-function tests only** (wallet grant math, match tier
+boundaries, the review profanity regex): edge cases that cannot be reached
+through live HTTP because the clock or inventory state is not controllable.
+
+```bash
+pip install -e ".[dev]" && pytest
+```
 
 ## Architecture
 
-Layered architecture (Controller → Service → Repository/Model):
+Layered (Controller → Service → Repository/Model) — full documentation with
+diagrams in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Summary:
 
 ```
 app/
 ├── api/            # routers + dependencies: HTTP in/out only
-├── services/       # business rules: auth flows, wallet grants, checkout
+├── services/       # business rules: auth, store/checkout, wallet, recipes, profile
 ├── data/           # SQLAlchemy models, repositories (all SQL), seed catalogue
-├── schemas.py      # request/response DTOs (camelCase, mirrors frontend types)
+├── integrations/   # external APIs (TheMealDB client)
+├── schemas.py      # request validation (responses are contract-shaped dicts)
 ├── security.py     # bcrypt password hashing, JWT session tokens
 ├── errors.py       # business exceptions → uniform {"error": {code, message}}
+├── images.py       # shared upload guard (type whitelist + size cap)
+├── profanity.py    # regex filter for review text
 ├── db.py           # engine, session factory, bootstrap
 └── main.py         # app factory: CORS, error mapping, routers
 ```
@@ -60,36 +75,44 @@ app/
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| POST | `/api/v1/auth/register` | Create an account (email + password + display name) |
+| POST | `/api/v1/auth/register` | Create an account |
 | POST | `/api/v1/auth/login` | Sign in |
 | POST | `/api/v1/auth/guest` | Anonymous session for the guest mode |
 | POST | `/api/v1/auth/logout` | Clear the session cookie |
 | GET | `/api/v1/auth/me` | Current user |
-| GET | `/api/v1/ingredients` | Ingredient catalogue (seeded from the frontend dummy data) |
-| GET | `/api/v1/shopping-sessions/active` | Wallet + cart + kitchen inventory snapshot |
+| GET | `/api/v1/ingredients` | Catalogue: 80 sellable items + the full TheMealDB pantry (~900, unlimited use, not for sale) |
+| GET | `/api/v1/shopping-sessions/active` | Wallet + cart + inventory snapshot |
 | PUT | `/api/v1/shopping-sessions/{id}/items/{ingredientId}` | Set cart quantity (0 removes) |
 | POST | `/api/v1/shopping-sessions/{id}/checkout` | Purchase the cart |
+| GET | `/api/v1/kitchen/inventory` | Kitchen stock |
+| GET | `/api/v1/recipes?search=` | TheMealDB search |
+| GET | `/api/v1/recipes/{id}` | Recipe detail (instructions + ingredients) |
+| GET | `/api/v1/recipes/matches?search=` | Three-tier match: ready / almost / needShopping |
+| POST | `/api/v1/recipes/{id}/cook` | Consume ingredients, record history |
+| PATCH | `/api/v1/me` | Change displayName / email / password |
+| PUT/GET | `/api/v1/me/avatar` | Upload / fetch the avatar image |
+| GET | `/api/v1/history` | Cooking history with reviews |
+| PUT | `/api/v1/history/{id}/review` | Write a review (text + optional photo) |
+| GET | `/api/v1/history/{id}/image` | Fetch a review photo |
 
-Sessions are JWTs signed and verified server-side, delivered as an HttpOnly
-cookie (also returned as `accessToken` in the auth responses). Business
-failures return structured error codes, e.g.:
+Sessions are JWTs signed and verified server-side (HttpOnly cookie, or
+`Authorization: Bearer` for API clients). Business failures return structured
+error codes, e.g. `EMPTY_CART`, `BUDGET_EXCEEDED`, `MISSING_INGREDIENTS`,
+`PROFANITY_REJECTED`.
 
-```json
-{ "error": { "code": "rule_validation", "message": "There is not enough money in your wallet.", "details": { "code": "BUDGET_EXCEEDED" } } }
-```
+## Rules in force
 
-## Wallet rules
-
-Starting balance 500 SEK; +100 SEK per full hour between 09:00 and 17:00
-(Stockholm time); capped at 3000 SEK. Grants accrue lazily whenever the
-shopping snapshot is read. Checkout refuses an empty cart (`EMPTY_CART`) and
-overspending (`BUDGET_EXCEEDED`) with 422.
+- Wallet: 500 SEK start, +100 per full hour 09:00–17:00 (Stockholm), cap 3000
+- Cart: max 9 per ingredient; checkout refuses empty carts and overspending (422, cart kept)
+- Match: all ingredients in stock → *ready*; ≤ 2 missing → *almost ready*; else *need shopping* (ingredients the store does not sell count as available)
+- Cooking: every sellable recipe ingredient must be in stock; each use deducts one and appends to history
+- Reviews: regex profanity filter rejects listed words; images limited to PNG/JPEG/WebP ≤ 2 MB (avatar and review photos share this guard)
 
 ## Environment variables
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `CTK_DATABASE_URL` | local PostgreSQL URL | SQLAlchemy connection string |
-| `CTK_JWT_SECRET` | dev value | HMAC secret for session tokens |
+| `CTK_JWT_SECRET` | dev-only value | Session token signing key |
 | `CTK_ALLOWED_ORIGINS` | Vite dev origins | CORS allow-list |
 | `CTK_SESSION_HOURS` | `168` | Session token lifetime |

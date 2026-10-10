@@ -7,3 +7,6 @@ __pycache__/
 # local secrets / overrides
 .env
 *.egg-info/
+
+# architecture documentation belongs in the repo (root gitignore hides docs/)
+!docs/
