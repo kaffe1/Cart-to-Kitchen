@@ -227,6 +227,8 @@ test('committed purchase with refresh failure blocks payment retry and recovers 
   };
   assert.equal((await session.checkout()).spentSek, 36);
   assert.match(session.getSnapshot().checkoutNotice, /Purchase complete/);
+  session.clearCheckoutNotice();
+  assert.equal(session.getSnapshot().checkoutNotice, null);
   assert.match(session.getSnapshot().error, /purchase succeeded/);
   assert.equal(session.getSnapshot().shopping, null);
   await assert.rejects(session.checkout(), { code: 'SESSION_NOT_READY' });

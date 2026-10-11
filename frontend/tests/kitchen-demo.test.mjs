@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { allIngredients, dummyRecipes, pantryIngredients } from '../src/shared/api/dummyData.ts';
-import { findDemoDishes } from '../src/features/kitchen/model/kitchen.api.ts';
-import { aggregateCounter, firstAvailableMatchTab } from '../src/features/kitchen/model/kitchen.rules.ts';
+import {
+  clearDiscovery, findDemoDishes, getCachedDiscovery, rememberDiscovery,
+} from '../src/features/kitchen/model/kitchen.api.ts';
+import { aggregateCounter, firstAvailableMatchTab, matchRecipes } from '../src/features/kitchen/model/kitchen.rules.ts';
 import {
   addIngredientToCounter, clearCounter, getKitchenDemoSnapshot,
   hydrateKitchenDemo, moveCounterPlacement, removeCounterPlacement, toggleFavorite,
@@ -47,6 +49,60 @@ test('matching is local and changes from shopping to almost to ready using real-
   assert.equal(firstAvailableMatchTab(findDemoDishes([], [{ ingredientId: 'water', selectedUses: 1 }])), 'almost');
   assert.equal(firstAvailableMatchTab({ readyNow: [], almostReady: [], needShopping: [{}] }), 'shopping');
   assert.equal(firstAvailableMatchTab(findDemoDishes(inventory, fullCounter)), 'ready');
+});
+
+test('the last discovery result survives a Kitchen route remount and stays user-scoped', () => {
+  const userA = 'discovery-user-a';
+  const userB = 'discovery-user-b';
+  clearDiscovery(userA);
+  clearDiscovery(userB);
+  assert.equal(getCachedDiscovery(userA), null);
+  rememberDiscovery(userA, dummyRecipes.slice(0, 2));
+  assert.deepEqual(getCachedDiscovery(userA)?.map((recipe) => recipe.id), dummyRecipes.slice(0, 2).map((recipe) => recipe.id));
+  assert.equal(getCachedDiscovery(userB), null);
+  clearDiscovery(userA);
+  assert.equal(getCachedDiscovery(userA), null);
+});
+
+test('recipes with unsupported ingredients sort after purchasable recipes', () => {
+  const shared = { emoji: '🍽️', category: 'Test', accent: '#fff', steps: ['Cook'] };
+  const recipes = [
+    {
+      ...shared, id: 'unsupported', name: 'A Unsupported',
+      requirements: [{ ingredientId: 'water', amount: 1, automatic: true }],
+      unsupportedIngredients: ['Mystery spice'],
+    },
+    {
+      ...shared, id: 'purchasable', name: 'Z Purchasable',
+      requirements: [{ ingredientId: 'tomato', amount: 1 }],
+    },
+  ];
+  assert.deepEqual(
+    matchRecipes(recipes, [], []).needShopping.map((item) => item.recipe.id),
+    ['purchasable', 'unsupported'],
+  );
+});
+
+test('recipes sort by counter coverage before raw matched ingredient count', () => {
+  const shared = { emoji: '🍽️', category: 'Test', accent: '#fff', steps: ['Cook'] };
+  const recipes = [
+    {
+      ...shared, id: 'four-of-ten', name: 'Four of ten',
+      requirements: Array.from({ length: 10 }, (_, index) => ({ ingredientId: `item-${index}`, amount: 1 })),
+    },
+    {
+      ...shared, id: 'three-of-four', name: 'Three of four',
+      requirements: [0, 1, 2].map((index) => ({ ingredientId: `item-${index}`, amount: 1 }))
+        .concat({ ingredientId: 'item-extra', amount: 1 }),
+    },
+  ];
+  const inventory = Array.from({ length: 10 }, (_, index) => ({ ingredientId: `item-${index}`, remainingUses: 1 }))
+    .concat({ ingredientId: 'item-extra', remainingUses: 1 });
+  const counter = Array.from({ length: 4 }, (_, index) => ({ ingredientId: `item-${index}`, selectedUses: 1 }));
+  assert.deepEqual(
+    matchRecipes(recipes, inventory, counter).almostReady.map((item) => item.recipe.id),
+    ['three-of-four', 'four-of-ten'],
+  );
 });
 
 test('counter placements restore purchased uses, move independently and keep pantry unlimited', () => {

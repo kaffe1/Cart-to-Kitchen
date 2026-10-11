@@ -148,6 +148,10 @@ export function useStorePresenter() {
     message,
     messageKind: message ? 'cart-add' : null,
     error,
+    clearFeedback: () => {
+      setMessage(null);
+      setError(null);
+    },
     setSelectedIngredientId,
     setCategory,
     setSearch,

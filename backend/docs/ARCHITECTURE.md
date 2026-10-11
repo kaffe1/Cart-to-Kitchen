@@ -20,7 +20,7 @@ consume responses without a mapping layer.
 | POST | `/api/v1/auth/guest` | Anonymous account for the frontend guest mode |
 | POST | `/api/v1/auth/logout` | Clear the session cookie |
 | GET | `/api/v1/auth/me` | Current user (requires auth) |
-| GET | `/api/v1/ingredients` | Catalogue: 80 sellable items + the full TheMealDB pantry (~900, unlimited use) |
+| GET | `/api/v1/ingredients` | Strict catalogue: 80 sellable items + exactly 30 unlimited default pantry items |
 | GET | `/api/v1/shopping-sessions/active` | Wallet + cart + kitchen inventory snapshot (requires auth) |
 | PUT | `/api/v1/shopping-sessions/{id}/items/{ingredientId}` | Set cart quantity, 0 removes (requires auth) |
 | POST | `/api/v1/shopping-sessions/{id}/checkout` | Purchase the cart (requires auth) |
@@ -114,7 +114,7 @@ today".
 
 | Rule | Value |
 | --- | --- |
-| Match tiers | 0 missing → *ready*; ≤ 2 → *almost ready*; else *need shopping*; ingredients the store does not sell count as available |
+| Match tiers | 0 missing → *ready*; ≤ 2 → *almost ready*; else *need shopping*. Only the 30 default pantry items are automatic; unsupported ingredients always prevent cooking. |
 | Cooking | every sellable ingredient must be in stock; each cook deducts one use and appends history (422 `MISSING_INGREDIENTS` otherwise, nothing deducted) |
 | Reviews | regex profanity filter; images PNG/JPEG/WebP ≤ 2 MB (shared guard with the avatar) |
 
@@ -180,8 +180,10 @@ business failures become structured errors at the HTTP boundary.
 ![Cook data flow](dataflow-cook.png)
 
 **EN.** Shopping feeds the inventory; the match resolves recipe ingredient
-names to catalogue items through aliases (names the store does not sell count
-as available) and buckets meals into ready / almost / needShopping; cooking is
+names to the 80 + 30 catalogue through strict aliases followed by the reviewed
+Tier 1/Tier 2 whitelist (only the 30 default pantry items count as automatically
+available) and buckets meals into ready / almost /
+needShopping. Unknown ingredients are explicitly unsupported; cooking is
 one transaction that verifies stock, deducts one use per ingredient and
 appends history; reviews attach text (regex-filtered) and an optional photo
 from the profile page.

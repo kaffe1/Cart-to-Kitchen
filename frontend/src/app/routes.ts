@@ -7,4 +7,5 @@ export const appRoutes = {
   register: '/register',
   recipe: (recipeId: string) => `/recipes/${recipeId}`,
   cook: (recipeId: string) => `/cook/${recipeId}`,
+  cookingFinished: (historyId: string) => `/cooking-finished/${historyId}`,
 } as const;

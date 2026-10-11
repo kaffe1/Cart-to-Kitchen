@@ -322,6 +322,10 @@ export function createAppSession(request: typeof requestJson = requestJson) {
     });
   }
 
+  function clearCheckoutNotice() {
+    if (state.checkoutNotice) publish({ checkoutNotice: null });
+  }
+
   return {
     getSnapshot: () => state,
     getServerSnapshot: () => initialState,
@@ -336,6 +340,7 @@ export function createAppSession(request: typeof requestJson = requestJson) {
     refresh,
     updateCart,
     checkout,
+    clearCheckoutNotice,
     login: (input: LoginInput) => authenticate('/auth/login', input),
     register: (input: RegisterInput) => authenticate('/auth/register', input),
     guest: () => authenticate('/auth/guest'),

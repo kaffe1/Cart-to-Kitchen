@@ -34,3 +34,7 @@ class UpdateMeInput(CamelModel):
     email: EmailStr | None = None
     new_password: str | None = Field(alias="newPassword", default=None, min_length=6, max_length=128)
     current_password: str | None = Field(alias="currentPassword", default=None)
+
+
+class DiscoverInput(CamelModel):
+    ingredient_ids: list[str] = Field(alias="ingredientIds", min_length=1, max_length=110)

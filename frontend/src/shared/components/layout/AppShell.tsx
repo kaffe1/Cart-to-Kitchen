@@ -9,7 +9,7 @@ import { useEffect, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { appRoutes } from '@/app/routes';
 import { Button } from '@/shared/components/ui/button';
-import { FeedbackBanner } from '@/shared/components/ui/FeedbackBanner';
+import { FeedbackBanner, FeedbackToast } from '@/shared/components/ui/FeedbackBanner';
 import { appSession } from '../../api/appSession';
 import { useAppShellPresenter } from './useAppShellPresenter';
 
@@ -107,12 +107,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
+      {presenter.checkoutNotice && (
+        <FeedbackToast
+          message={presenter.checkoutNotice}
+          onDismiss={appSession.clearCheckoutNotice}
+        />
+      )}
+
       <main className="app-main">
-        {presenter.checkoutNotice && (
-          <FeedbackBanner tone="success">
-            {presenter.checkoutNotice}
-          </FeedbackBanner>
-        )}
         {presenter.status === 'error' && (
           <div role="alert" className="p-4 space-y-3">
             <FeedbackBanner tone="error">{presenter.error}</FeedbackBanner>

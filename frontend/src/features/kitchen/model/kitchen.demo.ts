@@ -14,6 +14,7 @@ let snapshot = initialSnapshot;
 const listeners = new Set<() => void>();
 const knownIds = new Set(allIngredients.map((item) => item.id));
 const recipeIds = new Set(dummyRecipes.map((recipe) => recipe.id));
+const validRecipeId = (id: unknown): id is string => typeof id === 'string' && (recipeIds.has(id) || /^\d+$/.test(id));
 let placementSequence = 0;
 
 function clamp(value: number) {
@@ -88,7 +89,7 @@ export function hydrateKitchenDemo(userId: string) {
   const next: KitchenDemoState = {
     counter: restoreCounter(saved.counter),
     favorites: Array.isArray(saved.favorites)
-      ? saved.favorites.filter((id) => recipeIds.has(id))
+      ? saved.favorites.filter(validRecipeId)
       : [],
   };
   publish(userId, next);
@@ -144,7 +145,7 @@ export function addMissingToCounter(userId: string, ingredientIds: string[], inv
 }
 
 export function toggleFavorite(userId: string, recipeId: string) {
-  if (!recipeIds.has(recipeId)) return;
+  if (!validRecipeId(recipeId)) return;
   update(userId, (current) => ({
     ...current,
     favorites: current.favorites.includes(recipeId)

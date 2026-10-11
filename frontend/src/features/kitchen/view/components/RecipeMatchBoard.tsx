@@ -57,6 +57,7 @@ function MatchCard({
 }) {
   const ready = match.availability === 'ready_now';
   const almost = match.availability === 'almost_ready';
+  const unsupported = match.recipe.unsupportedIngredients ?? [];
   return (
     <article className="recipe-match-card" style={{ '--recipe-accent': match.recipe.accent } as React.CSSProperties}>
       <RecipeArtwork recipe={match.recipe} />
@@ -67,14 +68,18 @@ function MatchCard({
             <Heart size={17} fill={favorite ? 'currentColor' : 'none'} />
           </button>
         </div>
-        <p>{match.matchedCount}/{match.requiredCount} ingredients on the counter</p>
+        <p>{match.matchedCount}/{match.requiredCount} ingredients covered · pantry included</p>
         {almost && <small><Sparkles size={14} /> In kitchen: {ingredientNames(match.missingFromCounter, ingredients)}</small>}
         {!ready && !almost && <small><ShoppingCart size={14} /> Need: {ingredientNames(match.missingFromInventory, ingredients)}</small>}
+        {unsupported.length > 0 && <small>Not available in this kitchen: {unsupported.join(', ')}</small>}
         <div className="recipe-card-actions">
+          <Link className={buttonVariants({ size: 'sm', variant: 'ghost' })} to={appRoutes.recipe(match.recipe.id)}>Details</Link>
           {ready ? (
-            <Link className={buttonVariants({ size: 'sm' })} to={appRoutes.cook(match.recipe.id)}><Check size={15} /> Cook now</Link>
+            <Link className={buttonVariants({ size: 'sm', className: 'cook-now-button' })} to={appRoutes.cook(match.recipe.id)}><Check size={15} /> Cook now</Link>
           ) : almost ? (
             <Button size="sm" disabled={disabled} onClick={() => onCompleteCounter(match.missingFromCounter)}><ListPlus size={15} /> Add all</Button>
+          ) : unsupported.length ? (
+            <Button size="sm" variant="secondary" disabled>Unavailable ingredients</Button>
           ) : (
             <Link className={buttonVariants({ size: 'sm', variant: 'secondary' })} to={appRoutes.store}><ShoppingCart size={15} /> Go shopping</Link>
           )}
@@ -110,6 +115,7 @@ export function RecipeMatchBoard(props: RecipeMatchBoardProps) {
         <div><span className="eyebrow">Recipe radar</span><h2>What can you make?</h2></div>
         <Badge>{matches.readyNow.length + matches.almostReady.length + matches.needShopping.length} ideas</Badge>
       </div>
+      {!matches.readyNow.length && !matches.almostReady.length && !matches.needShopping.length && <output>No dishes found for this selection. Try adding a different ingredient and search again.</output>}
       <Tabs key={initialTab} defaultValue={initialTab}>
         <TabsList className="match-tabs">
           <TabsTrigger value="ready">Ready now <Badge>{matches.readyNow.length}</Badge></TabsTrigger>

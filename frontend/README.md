@@ -12,7 +12,7 @@ This directory contains the React frontend for Cart to Kitchen. It is a standalo
 - React Three Fiber
 - dnd-kit
 
-Auth and Store use the FastAPI backend in `../backend`. User sessions, wallet balances, carts and purchased inventory are restored from the server. Kitchen reads purchased inventory from the same shopping session; its pantry, counter, recipe matches, favorites, and cooking walkthrough are frontend demo features. Profile remains a placeholder.
+Auth, Store, Kitchen recipe discovery and Cooking use the FastAPI backend in `../backend`. Sessions, wallet balances, carts, inventory and cooking history are server-owned. Kitchen keeps counter positions and favorites in user-scoped browser storage. Find dishes loads real TheMealDB recipes/photos through the backend. Finish cooking consumes inventory and records history. Profile remains a placeholder.
 
 ## Commands
 
@@ -192,20 +192,33 @@ checkout reloads the active shopping session to obtain the new ID and inventory.
 Identity changes clear prior user data and discard stale request results. Network
 failures show retry controls rather than falling back to mock data.
 
-`dummyData.ts` contains the 80-item store fixture, the 30 default pantry items
-listed below, and sample recipes with steps. `demoBackend.ts` is not used by
-runtime features. Kitchen demo counter selections and favorites are kept per
-user in browser storage. Recipe cards link directly to Store when ingredients
-are missing, and display a recipe image when `imageUrl` is supplied (falling
-back to emoji otherwise). Only purchased inventory comes from the server.
-Kitchen shows purchased uses minus the emojis currently on the counter; dragging
-an emoji off the counter or pressing Clear restores those local uses. The 30
-unlimited default pantry ingredients live in the pull-up drawer above the
-counter. Dragging from either source places a movable emoji on the fixed-size
-counter; Find dishes scrolls to the results after they render.
-Completing a demo recipe does not consume server inventory. The wallet is not
-polled: the backend currently loses partial accrual intervals on reads (see the
-phase-one report).
+`dummyData.ts` retains the 80-item display catalogue, 30 default pantry items
+and legacy recipe fixtures for deterministic tests. Runtime recipes and instructions
+come from TheMealDB through `POST /recipes/discover` and `GET /recipes/{id}`.
+Counter positions and favorites remain per-user browser data. Unlimited pantry
+requirements are automatically covered. Ready means all required sellable items
+are on the counter; almost means they are owned but not all placed; shopping
+means inventory is missing items. Cooking is ultimately validated by the backend.
+The backend checks a wider candidate pool before returning the final 18 ideas:
+catalogue-supported recipes take every available slot first, while unsupported
+recipes are only fallback results. Within each frontend status group, recipes
+with the highest proportion of requirements already covered by the counter rank
+before recipes that merely have a larger raw ingredient count.
+The last successful discovery is cached per user in memory, so opening a recipe
+Details route and returning to Kitchen restores Recipe Radar and reclassifies the
+same recipes against the current counter and inventory. Clear removes that cache.
+
+The counter uses a full wooden surface with an inset placement area. Shelf drags
+center on the pointer; existing counter drags preserve the grab offset. The
+cooking page plays instructions at two-second intervals with pause, replay,
+manual scrolling and reduced-motion support. Finish submits `POST /recipes/{id}/cook`
+with a persisted `Idempotency-Key`, refreshes inventory, then opens the completed
+dish via `/cooking-finished/{historyId}`. Refreshing that page reads history and
+recipe details without submitting cooking again.
+
+Run `npm run test:kitchen:ui` for the Cypress kitchen journey/drag/player suite,
+or `npm run test:components` for all component tests. The wallet is not polled:
+the existing partial-accrual issue remains outside this change.
 
 Run deterministic request/state tests with `npm run test:api`. To run the real
 HTTP integration test, explicitly target a **disposable local database**; this
@@ -227,18 +240,19 @@ The detailed implementation and acceptance report is in
 | -------------------- | -------------------------------------------------------------------- |
 | `/store`             | Browse ingredients, use the 3D shelf, manage the cart, and check out |
 | `/kitchen`           | Real purchased inventory, 30-item pantry, local counter and recipe radar |
-| `/recipes/:recipeId` | Frontend demo recipe details                                          |
-| `/cook/:recipeId`    | Frontend step-by-step cooking walkthrough                             |
+| `/recipes/:recipeId` | Real MealDB ingredients and recipe detail                             |
+| `/cook/:recipeId`    | Animated instructions and server-confirmed cooking                    |
+| `/cooking-finished/:historyId` | Completed dish photo, ingredient emojis and history-based count |
 | `/me`                | Minimal Profile placeholder                                          |
 | `/login`             | Sign in with the backend session cookie                          |
 | `/register`          | Register a persisted account                |
 | `/design-system`     | Development-only reference for global tokens and shared components   |
 
 Kitchen uses `GET /shopping-sessions/active` through `appSession` for purchased
-stock and frontend fixtures for its display names. Recipe matching, favorites,
-counter selections and cooking steps are local demo behavior.
-`TODO(BACKEND)` comments mark the boundaries for later integration. Profile
-remains a placeholder.
+stock and frontend fixtures for display names. Discovery is server-backed; tier
+classification reacts locally to the selected counter using normalized server
+requirements. The old `GET /recipes/matches?search=` endpoint remains compatible
+but is not used by Recipe radar. See [the implementation report](../KITCHEN_IMPLEMENTATION.md).
 
 ## ingredients
 
@@ -276,17 +290,17 @@ remains a placeholder.
 | 🥑 Avocado | 牛油果 | 3 | Avocado |
 | 🥫 Canned Tomatoes | 罐装番茄 | 3 | Canned Tomatoes |
 | 🥫 Tomato Puree | 番茄泥/浓缩番茄原料 | 3 | Tomato Puree |
-| 🍗 Chicken Breast | 鸡胸肉 | 1 | Chicken Breast |
+| 🍗 Chicken | 鸡肉 | 1 | Chicken / Chicken Breast |
 | 🥩 Beef | 牛肉 | 1 | Beef |
 | 🥩 Minced Beef | 牛肉末 | 1 | Minced Beef / Ground Beef |
 | 🥓 Bacon | 培根 | 3 | Bacon |
 | 🍖 Ham | 火腿 | 3 | Ham |
 | 🐑 Lamb | 羊肉 | 1 | Lamb |
 | 🐖 Pork | 猪肉 | 1 | Pork |
-| 🦐 Prawns | 虾 | 1 | Prawns / Shrimp |
-| 🐟 Salmon | 三文鱼 | 1 | Salmon |
+| 🦐 Prawns & Shrimp | 虾类 | 1 | Prawns / Shrimp |
+| 🐟 Salmon & Trout | 鲑鱼/鳟鱼 | 1 | Salmon |
 | 🐠 Tuna | 金枪鱼 | 3 | Tuna |
-| 🐟 Cod | 鳕鱼 | 1 | Cod |
+| 🐟 White Fish | 白肉鱼 | 1 | Cod |
 | 🌭 Sausages | 香肠 | 3 | Sausages / Sausage |
 | 🥚 Egg | 鸡蛋 | 3 | Egg / Eggs |
 | 🧀 Cheese | 普通奶酪 | 3 | Cheese |
@@ -300,7 +314,7 @@ remains a placeholder.
 | 🧀 Cream Cheese | 奶油奶酪 | 3 | Cream Cheese |
 | 🍞 Bread | 面包 | 3 | Bread |
 | 🍚 Rice | 大米 | 3 | Rice |
-| 🍝 Spaghetti | 意大利长面 | 3 | Spaghetti |
+| 🍝 Pasta | 意大利面 | 3 | Spaghetti |
 | 🍜 Noodles | 面条 | 3 | Noodles |
 | 🌾 Flour | 面粉 | 3 | Flour / Plain Flour |
 | 🍬 Sugar | 白糖 | 3 | Sugar |
@@ -310,7 +324,7 @@ remains a placeholder.
 | 🌮 Tortillas | 墨西哥薄饼 | 3 | Tortillas |
 | 🍞 Breadcrumbs | 面包糠 | 3 | Breadcrumbs |
 | ⬜ Tofu | 豆腐 | 3 | Tofu |
-| 🫘 Kidney Beans | 红腰豆 | 3 | Kidney Beans |
+| 🫘 Beans | 豆类 | 3 | Kidney Beans |
 | 🥐 Puff Pastry | 酥皮 | 3 | Puff Pastry |
 | 🍜 Rice Noodles | 米粉/米面 | 3 | Rice Noodles |
 | 🍞 Yeast | 酵母 | 3 | Yeast |
@@ -321,7 +335,7 @@ remains a placeholder.
 | 🍓 Jam | 果酱 | 3 | Jam |
 | 🌰 Almonds | 杏仁 | 3 | Almonds |
 | 🌰 Walnuts | 核桃 | 3 | Walnuts |
-| 🍇 Raisins | 葡萄干 | 3 | Raisins |
+| 🍇 Raisins & Currants | 葡萄干/醋栗干 | 3 | Raisins |
 | 🍨 Ice Cream | 冰淇淋 | 3 | Ice Cream |
 | 🧃 Orange Juice | 橙汁 | 3 | Orange Juice |
 | 🍫 Chocolate | 巧克力 | 3 | Chocolate |

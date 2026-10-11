@@ -32,12 +32,12 @@ export function matchRecipes(
 ): RecipeMatchGroups {
   const results = recipes.map<RecipeMatch>((recipe) => {
     const missingFromInventory = recipe.requirements
-      .filter(({ ingredientId, amount }) => availableUses(inventory, ingredientId) < amount)
+      .filter(({ ingredientId, amount, automatic }) => !automatic && availableUses(inventory, ingredientId) < amount)
       .map(({ ingredientId }) => ingredientId);
     const missingFromCounter = recipe.requirements
-      .filter(({ ingredientId, amount }) => selectedUses(counter, ingredientId) < amount)
+      .filter(({ ingredientId, amount, automatic }) => !automatic && selectedUses(counter, ingredientId) < amount)
       .map(({ ingredientId }) => ingredientId);
-    const availability = missingFromInventory.length > 0
+    const availability = recipe.unsupportedIngredients?.length || missingFromInventory.length > 0
       ? 'need_shopping'
       : missingFromCounter.length > 0 ? 'almost_ready' : 'ready_now';
     return {
@@ -48,7 +48,13 @@ export function matchRecipes(
     };
   });
   const sortMatches = (a: RecipeMatch, b: RecipeMatch) =>
-    b.matchedCount - a.matchedCount || a.recipe.name.localeCompare(b.recipe.name);
+    Number(Boolean(a.recipe.unsupportedIngredients?.length))
+      - Number(Boolean(b.recipe.unsupportedIngredients?.length))
+    || (b.requiredCount ? b.matchedCount / b.requiredCount : 1)
+      - (a.requiredCount ? a.matchedCount / a.requiredCount : 1)
+    || b.matchedCount - a.matchedCount
+    || a.missingFromInventory.length - b.missingFromInventory.length
+    || a.recipe.name.localeCompare(b.recipe.name);
   return {
     readyNow: results.filter((item) => item.availability === 'ready_now').sort(sortMatches),
     almostReady: results.filter((item) => item.availability === 'almost_ready').sort(sortMatches),

@@ -67,6 +67,7 @@ def inventory_public(db: Session, user_id: int) -> list[dict]:
             ),
         }
         for row in stock_rows
+        if row.ingredient_id in catalogue
     ]
 
 
@@ -117,6 +118,7 @@ def set_cart_quantity(
 
 def checkout(db: Session, user: User, session_id: int) -> dict:
     repo = ShoppingRepository(db)
+    repo.lock_user(user.id)
     trip = repo.owned_active_session(session_id, user.id)
     lines = repo.cart_lines(trip.id)
     if not lines:

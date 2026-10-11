@@ -55,17 +55,17 @@ export const storeIngredients: Ingredient[] = [
   ingredient('avocado', '🥑', 'Avocado', 'Vegetables & Fruits', 3, 29, ['avocado'], '#628446'),
   ingredient('canned-tomatoes', '🥫', 'Canned Tomatoes', 'Vegetables & Fruits', 3, 18, ['canned tomatoes'], '#c74231'),
   ingredient('tomato-puree', '🥫', 'Tomato Puree', 'Vegetables & Fruits', 3, 16, ['tomato puree'], '#a92e26'),
-  ingredient('chicken-breast', '🍗', 'Chicken Breast', 'Meat & Seafood', 1, 58, ['chicken breast'], '#d69a78'),
+  ingredient('chicken-breast', '🍗', 'Chicken', 'Meat & Seafood', 1, 58, ['chicken', 'chicken breast'], '#d69a78'),
   ingredient('beef', '🥩', 'Beef', 'Meat & Seafood', 1, 74, ['beef'], '#9d3e36'),
   ingredient('minced-beef', '🥩', 'Minced Beef', 'Meat & Seafood', 1, 62, ['minced beef', 'ground beef'], '#a64b42'),
   ingredient('bacon', '🥓', 'Bacon', 'Meat & Seafood', 3, 42, ['bacon'], '#bd594d'),
   ingredient('ham', '🍖', 'Ham', 'Meat & Seafood', 3, 40, ['ham'], '#d77e79'),
   ingredient('lamb', '🐑', 'Lamb', 'Meat & Seafood', 1, 79, ['lamb'], '#9d4d43'),
   ingredient('pork', '🐖', 'Pork', 'Meat & Seafood', 1, 61, ['pork'], '#d38378'),
-  ingredient('prawns', '🦐', 'Prawns', 'Meat & Seafood', 1, 69, ['prawns', 'shrimp'], '#e27a5b'),
-  ingredient('salmon', '🐟', 'Salmon', 'Meat & Seafood', 1, 78, ['salmon'], '#e87961'),
+  ingredient('prawns', '🦐', 'Prawns & Shrimp', 'Meat & Seafood', 1, 69, ['prawns', 'shrimp'], '#e27a5b'),
+  ingredient('salmon', '🐟', 'Salmon & Trout', 'Meat & Seafood', 1, 78, ['salmon'], '#e87961'),
   ingredient('tuna', '🐠', 'Tuna', 'Meat & Seafood', 3, 39, ['tuna'], '#718a9d'),
-  ingredient('cod', '🐟', 'Cod', 'Meat & Seafood', 1, 66, ['cod'], '#d2d9d5'),
+  ingredient('cod', '🐟', 'White Fish', 'Meat & Seafood', 1, 66, ['cod'], '#d2d9d5'),
   ingredient('sausages', '🌭', 'Sausages', 'Meat & Seafood', 3, 43, ['sausage', 'sausages'], '#b95d47'),
   ingredient('egg', '🥚', 'Egg', 'Dairy & Eggs', 3, 24, ['egg', 'eggs'], '#efc958'),
   ingredient('cheese', '🧀', 'Cheese', 'Dairy & Eggs', 3, 35, ['cheese'], '#edb43a'),
@@ -79,7 +79,7 @@ export const storeIngredients: Ingredient[] = [
   ingredient('cream-cheese', '🧀', 'Cream Cheese', 'Dairy & Eggs', 3, 36, ['cream cheese'], '#eee7d4'),
   ingredient('bread', '🍞', 'Bread', 'Grains & Staples', 3, 25, ['bread'], '#bd7c45'),
   ingredient('rice', '🍚', 'Rice', 'Grains & Staples', 3, 26, ['rice'], '#e7dfc9'),
-  ingredient('spaghetti', '🍝', 'Spaghetti', 'Grains & Staples', 3, 28, ['spaghetti'], '#e1b64c'),
+  ingredient('spaghetti', '🍝', 'Pasta', 'Grains & Staples', 3, 28, ['spaghetti'], '#e1b64c'),
   ingredient('noodles', '🍜', 'Noodles', 'Grains & Staples', 3, 26, ['noodles'], '#d8af4c'),
   ingredient('flour', '🌾', 'Flour', 'Grains & Staples', 3, 19, ['flour', 'plain flour'], '#e9dfc8'),
   ingredient('sugar', '🍬', 'Sugar', 'Grains & Staples', 3, 18, ['sugar'], '#e7e4df'),
@@ -89,7 +89,7 @@ export const storeIngredients: Ingredient[] = [
   ingredient('tortillas', '🌮', 'Tortillas', 'Grains & Staples', 3, 27, ['tortilla', 'tortillas'], '#d5ac68'),
   ingredient('breadcrumbs', '🍞', 'Breadcrumbs', 'Grains & Staples', 3, 21, ['breadcrumbs'], '#b77d43'),
   ingredient('tofu', '⬜', 'Tofu', 'Grains & Staples', 3, 24, ['tofu'], '#ede5cf'),
-  ingredient('kidney-beans', '🫘', 'Kidney Beans', 'Grains & Staples', 3, 24, ['kidney bean', 'kidney beans'], '#98443c'),
+  ingredient('kidney-beans', '🫘', 'Beans', 'Grains & Staples', 3, 24, ['kidney bean', 'kidney beans'], '#98443c'),
   ingredient('puff-pastry', '🥐', 'Puff Pastry', 'Grains & Staples', 3, 35, ['puff pastry'], '#d6a35f'),
   ingredient('rice-noodles', '🍜', 'Rice Noodles', 'Grains & Staples', 3, 27, ['rice noodles'], '#e0d4b8'),
   ingredient('yeast', '🍞', 'Yeast', 'Grains & Staples', 3, 15, ['yeast'], '#b99b70'),
@@ -100,7 +100,7 @@ export const storeIngredients: Ingredient[] = [
   ingredient('jam', '🍓', 'Jam', 'Other Ingredients', 3, 27, ['jam'], '#b8394a'),
   ingredient('almonds', '🌰', 'Almonds', 'Other Ingredients', 3, 34, ['almond', 'almonds'], '#b88759'),
   ingredient('walnuts', '🌰', 'Walnuts', 'Other Ingredients', 3, 35, ['walnut', 'walnuts'], '#9d6d45'),
-  ingredient('raisins', '🍇', 'Raisins', 'Other Ingredients', 3, 24, ['raisin', 'raisins'], '#68434b'),
+  ingredient('raisins', '🍇', 'Raisins & Currants', 'Other Ingredients', 3, 24, ['raisin', 'raisins'], '#68434b'),
   ingredient('ice-cream', '🍨', 'Ice Cream', 'Other Ingredients', 3, 33, ['ice cream'], '#f2d4cf'),
   ingredient('orange-juice', '🧃', 'Orange Juice', 'Other Ingredients', 3, 28, ['orange juice'], '#eb982d'),
   ingredient('chocolate', '🍫', 'Chocolate', 'Other Ingredients', 3, 30, ['chocolate'], '#6b3d2c'),
@@ -122,12 +122,12 @@ function pantryIngredient(
   };
 }
 
-// Frontend-owned default pantry, matching the 30 rows in frontend/README.md.
-// TODO(BACKEND): Replace this catalogue with the backend's pantry configuration.
+// Display metadata for the same 30-item whitelist in backend/app/data/pantry.py.
+// The backend contract test checks that these IDs stay aligned.
 export const pantryIngredients: Ingredient[] = [
   pantryIngredient('salt', '🧂', 'Salt', 'Essential Seasonings & Oils'),
   pantryIngredient('black-pepper', '🌶️', 'Black Pepper', 'Essential Seasonings & Oils', ['pepper']),
-  pantryIngredient('olive-oil', '🫒', 'Olive Oil', 'Essential Seasonings & Oils'),
+  pantryIngredient('olive-oil', '🫒', 'Olive Oil', 'Essential Seasonings & Oils', ['extra virgin olive oil']),
   pantryIngredient('vegetable-oil', '🛢️', 'Vegetable Oil', 'Essential Seasonings & Oils', ['oil']),
   pantryIngredient('water', '💧', 'Water', 'Essential Seasonings & Oils'),
   pantryIngredient('vinegar', '🍶', 'Vinegar', 'Essential Seasonings & Oils'),

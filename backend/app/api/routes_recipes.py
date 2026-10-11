@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Header
 from sqlalchemy.orm import Session
 
 from ..services import recipe_service
+from ..schemas import DiscoverInput
 from .deps import get_current_user, get_db
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
@@ -25,15 +26,21 @@ def matches(
     return recipe_service.matches(db, user, search)
 
 
+@router.post("/discover")
+def discover(payload: DiscoverInput, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    return recipe_service.discover(db, user, payload.ingredient_ids)
+
+
 @router.get("/{meal_id}")
-def detail(meal_id: str):
-    return recipe_service.detail(meal_id)
+def detail(meal_id: str, db: Session = Depends(get_db)):
+    return recipe_service.normalized_detail(db, meal_id)
 
 
 @router.post("/{meal_id}/cook")
 def cook(
     meal_id: str,
+    idempotency_key: str | None = Header(default=None, min_length=1, max_length=128),
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    return recipe_service.cook(db, user, meal_id)
+    return recipe_service.cook(db, user, meal_id, idempotency_key)

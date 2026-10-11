@@ -1,8 +1,7 @@
 import { Grid2X2, Search, Sparkles, View } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
-import { FeedbackBanner } from '@/shared/components/ui/FeedbackBanner';
+import { FeedbackBanner, FeedbackToast } from '@/shared/components/ui/FeedbackBanner';
 import { Input } from '@/shared/components/ui/input';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import { useStorePresenter } from '../presenter/useStorePresenter';
@@ -19,29 +18,6 @@ const categories: Array<IngredientCategory | 'All'> = [
   'Grains & Staples',
   'Other Ingredients',
 ];
-
-interface StoreToastProps {
-  message: string;
-  tone: 'success' | 'error';
-}
-
-function StoreToast({ message, tone }: StoreToastProps) {
-  const [isVisible, setIsVisible] = useState(true);
-
-  useEffect(() => {
-    const timeout = window.setTimeout(() => setIsVisible(false), 2000);
-    return () => window.clearTimeout(timeout);
-  }, []);
-
-  return (
-    <div
-      className={isVisible ? 'store-toast visible' : 'store-toast'}
-      aria-live="polite"
-    >
-      <FeedbackBanner tone={tone}>{message}</FeedbackBanner>
-    </div>
-  );
-}
 
 export function StorePage() {
   const presenter = useStorePresenter();
@@ -96,10 +72,11 @@ export function StorePage() {
       </div>
 
       {toastMessage && (
-        <StoreToast
+        <FeedbackToast
           key={`${presenter.error ? 'error' : 'success'}:${toastMessage}`}
           message={toastMessage}
           tone={presenter.error ? 'error' : 'success'}
+          onDismiss={presenter.clearFeedback}
         />
       )}
 

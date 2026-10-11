@@ -14,6 +14,8 @@
     "test:kitchen": "node --import ./tests/register-typescript.mjs --test tests/kitchen-demo.test.mjs",
     "format": "oxfmt",
     "test:api": "node --import ./tests/register-typescript.mjs --test tests/api-integration.test.mjs",
+    "test:components": "cypress run --component",
+    "test:kitchen:ui": "cypress run --component --spec 'src/features/kitchen/view/KitchenFlow.cy.tsx,src/features/cooking/view/components/StepLyrics.cy.tsx'",
     "test:backend": "node --import ./tests/register-typescript.mjs --test tests/backend-integration.test.mjs"
   },
   "dependencies": {

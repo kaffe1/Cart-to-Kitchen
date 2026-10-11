@@ -25,6 +25,7 @@ function CounterEmoji({ item, disabled }: { item: CounterEntry; disabled: boolea
   return (
     <button
       ref={setNodeRef}
+      id={`drag-counter:${item.id}`}
       type="button"
       className={isDragging ? 'counter-emoji dragging' : 'counter-emoji'}
       style={{ left: `${item.x * 100}%`, top: `${item.y * 100}%` }}
@@ -44,7 +45,7 @@ export function CounterDropZone({ items, onClear, disabled = false }: CounterDro
   const { isOver, setNodeRef } = useDroppable({ id: 'kitchen-counter', disabled });
 
   return (
-    <section id="kitchen-counter" ref={setNodeRef} className={isOver ? 'counter-zone is-over' : 'counter-zone'}>
+    <>
       <div className="counter-topline">
         <div>
           <h2>Kitchen counter</h2>
@@ -54,7 +55,8 @@ export function CounterDropZone({ items, onClear, disabled = false }: CounterDro
         )}
       </div>
 
-      <div id="kitchen-counter-stage" className="counter-stage">
+    <section id="kitchen-counter" ref={setNodeRef} className={isOver ? 'counter-zone is-over' : 'counter-zone'} aria-label="Ingredient work surface">
+      <div id="kitchen-counter-stage" className={items.length === 0 ? 'counter-stage is-empty' : 'counter-stage'}>
         {items.length === 0 && (
           <div className="counter-empty">
             <span>🥣</span>
@@ -64,5 +66,6 @@ export function CounterDropZone({ items, onClear, disabled = false }: CounterDro
         {items.map((item) => <CounterEmoji key={item.id} item={item} disabled={disabled} />)}
       </div>
     </section>
+    </>
   );
 }

@@ -1,45 +1,37 @@
 import { Link } from 'react-router-dom';
-import { CookingPot } from 'lucide-react';
 import { appRoutes } from '@/app/routes';
-import { Badge } from '@/shared/components/ui/badge';
 import { Button, buttonVariants } from '@/shared/components/ui/button';
 import { FeedbackBanner } from '@/shared/components/ui/FeedbackBanner';
 import { useCookingPresenter } from '../presenter/useCookingPresenter';
+import { CookingAtmosphere, CookingIllustration } from './components/CookingAtmosphere';
+import { StepLyrics } from './components/StepLyrics';
 
 export function CookPage({ recipeId }: { recipeId: string }) {
   const presenter = useCookingPresenter(recipeId);
   const { recipe } = presenter;
   return (
-    <section className="page-shell recipe-detail-page cooking-page">
-      <CookingPot size={34} />
+    <section className="cooking-studio">
+      <CookingAtmosphere />
+      <div className="cooking-content">
+      <CookingIllustration />
+      <h1>{recipe?.name ?? 'Your kitchen is warming up'}</h1>
       {presenter.error && <FeedbackBanner tone="error">{presenter.error}</FeedbackBanner>}
       {presenter.isLoading && <output>Loading your kitchen…</output>}
+      {!recipe && presenter.error && <Button onClick={presenter.retry}>Retry recipe</Button>}
       {recipe && <>
-        <Badge variant="outline">Demo cooking</Badge>
-        <h1>{recipe.emoji} {recipe.name}</h1>
-        {!presenter.ready && !presenter.completed && !presenter.isLoading && !presenter.error && <>
+        {!presenter.ready && !presenter.isFinishing && !presenter.canRetryCompletion && !presenter.isLoading && <>
           <FeedbackBanner tone="error">Place all required ingredients on your kitchen counter first.</FeedbackBanner>
-          <Link className={buttonVariants()} to={appRoutes.kitchen}>Back to kitchen</Link>
         </>}
-        {presenter.completed && <>
-          <FeedbackBanner tone="success">Cooking walkthrough complete. Purchased inventory was not changed.</FeedbackBanner>
-          <Link className={buttonVariants()} to={appRoutes.kitchen}>Back to kitchen</Link>
-        </>}
-        {presenter.ready && !presenter.completed && <>
-          <p>Follow the sample instructions, one step at a time.</p>
-          <div className="cooking-step-card">
-            <span className="eyebrow">Step {presenter.stepIndex + 1} of {recipe.steps.length}</span>
-            <p>{recipe.steps[presenter.stepIndex]}</p>
-          </div>
-          <ol className="cooking-step-list">
-            {recipe.steps.map((step, index) => <li key={step} className={index === presenter.stepIndex ? 'active' : ''}>{index + 1}. {step}</li>)}
-          </ol>
-          <div className="recipe-detail-actions">
-            <Button variant="outline" onClick={presenter.previous} disabled={presenter.stepIndex === 0}>Previous</Button>
-            <Button onClick={presenter.next}>{presenter.stepIndex === recipe.steps.length - 1 ? 'Finish demo' : 'Next step'}</Button>
-          </div>
-        </>}
+        {recipe.steps.length ? <StepLyrics key={recipe.id} steps={recipe.steps} /> : <p>No instructions are available for this recipe.</p>}
       </>}
+      <div className="cooking-actions">
+        {presenter.isFinishing ? <Button variant="outline" disabled>Discard</Button> : <Link className={buttonVariants({ variant: 'outline', size: 'lg' })} to={appRoutes.kitchen}>Discard</Link>}
+        <Button size="lg" onClick={() => void presenter.finish()} disabled={(!presenter.ready && !presenter.canRetryCompletion) || presenter.isFinishing || presenter.isLoading}>
+          {presenter.isFinishing ? 'Saving your dish…' : presenter.canRetryCompletion ? 'Retry finish cooking' : 'Finish cooking'}
+        </Button>
+      </div>
+      <p className="recipe-source">Recipe by <a href="https://www.themealdb.com" target="_blank" rel="noreferrer">TheMealDB</a></p>
+      </div>
     </section>
   );
 }
