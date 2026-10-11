@@ -6,10 +6,9 @@ import {
   DialogTitle,
   DialogClose,
 } from "@/shared/components/ui/dialog";
-import { useEffect, useRef, useState, ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Button } from "@/shared/components/ui/button";
-
-const MAX_SIZE_BYTES = 5 * 1024 * 1024;
+import { validateImageFile } from "../../model/profile.validation";
 
 type AvatarDialogProps = {
   open: boolean;
@@ -41,12 +40,9 @@ export function AvatarDialog({
     if (!chosenFile) {
       return;
     }
-    if (!chosenFile.type.startsWith("image/")) {
-      setError("Please choose an image file.");
-      return;
-    }
-    if (chosenFile.size > MAX_SIZE_BYTES) {
-      setError("The image must be smaller than 5 MB.");
+    const validationError = validateImageFile(chosenFile);
+    if (validationError) {
+      setError(validationError);
       return;
     }
     setError(null);
