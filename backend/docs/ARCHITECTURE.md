@@ -20,7 +20,7 @@ consume responses without a mapping layer.
 | POST | `/api/v1/auth/guest` | Anonymous account for the frontend guest mode |
 | POST | `/api/v1/auth/logout` | Clear the session cookie |
 | GET | `/api/v1/auth/me` | Current user (requires auth) |
-| GET | `/api/v1/ingredients` | Catalogue: 80 sellable items + the full TheMealDB pantry (~900, unlimited use) |
+| GET | `/api/v1/ingredients` | Catalogue: the curated 110 — 80 sellable + 30 unlimited-use pantry items (kitchen defaults) |
 | GET | `/api/v1/shopping-sessions/active` | Wallet + cart + kitchen inventory snapshot (requires auth) |
 | PUT | `/api/v1/shopping-sessions/{id}/items/{ingredientId}` | Set cart quantity, 0 removes (requires auth) |
 | POST | `/api/v1/shopping-sessions/{id}/checkout` | Purchase the cart (requires auth) |
@@ -90,7 +90,7 @@ isolation is enforced in each query:
 | Table | Purpose |
 | --- | --- |
 | `users` | Accounts and guest accounts (`mode`, nullable email/password for guests) |
-| `ingredients` | Catalogue; `id` is the frontend slug (`tomato`) for the 80 sellable items, TheMealDB slugs for pantry; `uses_per_unit NULL` = infinite (pantry) |
+| `ingredients` | Catalogue; `id` is the frontend slug (`tomato`) for the 80 sellable items and the 30 pantry items; `uses_per_unit NULL` = infinite (pantry) |
 | `shopping_sessions` | One active trip per user; `active` → `checked_out` rotation |
 | `cart_items` | Session cart lines, unique (session, ingredient) |
 | `inventory_items` | Kitchen stock: remaining uses per (user, ingredient) |

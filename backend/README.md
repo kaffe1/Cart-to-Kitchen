@@ -80,7 +80,7 @@ app/
 | POST | `/api/v1/auth/guest` | Anonymous session for the guest mode |
 | POST | `/api/v1/auth/logout` | Clear the session cookie |
 | GET | `/api/v1/auth/me` | Current user |
-| GET | `/api/v1/ingredients` | Catalogue: 80 sellable items + the full TheMealDB pantry (~900, unlimited use, not for sale) |
+| GET | `/api/v1/ingredients` | Catalogue: the curated 110 — 80 sellable items + 30 unlimited-use pantry ingredients (kitchen defaults; the set covers ~70-80% of TheMealDB dishes) |
 | GET | `/api/v1/shopping-sessions/active` | Wallet + cart + inventory snapshot |
 | PUT | `/api/v1/shopping-sessions/{id}/items/{ingredientId}` | Set cart quantity (0 removes) |
 | POST | `/api/v1/shopping-sessions/{id}/checkout` | Purchase the cart |

@@ -166,3 +166,39 @@ INGREDIENTS = [
     dict(id='ginger', name='Ginger', emoji='🫚', category='Other Ingredients',
          uses_per_unit=3, price_sek=17, aliases=['ginger'], color='#c4a15d'),
 ]
+
+# The 30 curated pantry ingredients (kitchen defaults, unlimited uses).
+# Names/aliases map to TheMealDB recipe ingredients; the set was chosen so the
+# 110 catalogue items cover ~70-80% of TheMealDB dishes (team decision).
+PANTRY = [
+    dict(id='salt', name='Salt', emoji='🧂', aliases=['salt']),
+    dict(id='black-pepper', name='Black Pepper', emoji='🌶️', aliases=['black pepper', 'pepper']),
+    dict(id='olive-oil', name='Olive Oil', emoji='🫒', aliases=['olive oil']),
+    dict(id='vegetable-oil', name='Vegetable Oil', emoji='🛢️', aliases=['vegetable oil', 'oil']),
+    dict(id='water', name='Water', emoji='💧', aliases=['water']),
+    dict(id='vinegar', name='Vinegar', emoji='🍶', aliases=['vinegar']),
+    dict(id='soy-sauce', name='Soy Sauce', emoji='🍶', aliases=['soy sauce']),
+    dict(id='mustard', name='Mustard', emoji='🌭', aliases=['mustard']),
+    dict(id='ketchup', name='Ketchup', emoji='🍅', aliases=['ketchup']),
+    dict(id='chilli-sauce', name='Chilli Sauce', emoji='🌶️', aliases=['chilli sauce']),
+    dict(id='basil', name='Basil', emoji='🌿', aliases=['basil', 'basil leaves']),
+    dict(id='parsley', name='Parsley', emoji='🌱', aliases=['parsley']),
+    dict(id='oregano', name='Oregano', emoji='☘️', aliases=['oregano']),
+    dict(id='thyme', name='Thyme', emoji='🌿', aliases=['thyme']),
+    dict(id='cinnamon', name='Cinnamon', emoji='🥮', aliases=['cinnamon']),
+    dict(id='cumin', name='Cumin', emoji='🟤', aliases=['cumin']),
+    dict(id='paprika', name='Paprika', emoji='🌶️', aliases=['paprika']),
+    dict(id='chilli-flakes', name='Chilli Flakes', emoji='🌶️', aliases=['chilli flakes', 'red pepper flakes']),
+    dict(id='curry-powder', name='Curry Powder', emoji='🍛', aliases=['curry powder']),
+    dict(id='turmeric', name='Turmeric', emoji='🟡', aliases=['turmeric']),
+    dict(id='ground-coriander', name='Ground Coriander', emoji='🌿', aliases=['ground coriander']),
+    dict(id='bay-leaves', name='Bay Leaves', emoji='🍃', aliases=['bay leaf', 'bay leaves']),
+    dict(id='garlic-granules', name='Garlic Granules', emoji='🧄', aliases=['garlic granules']),
+    dict(id='italian-seasoning', name='Italian Seasoning', emoji='🌿', aliases=['italian seasoning']),
+    dict(id='baking-powder', name='Baking Powder', emoji='🧁', aliases=['baking powder']),
+    dict(id='baking-soda', name='Baking Soda', emoji='🥄', aliases=['baking soda']),
+    dict(id='vanilla-extract', name='Vanilla Extract', emoji='🌼', aliases=['vanilla extract']),
+    dict(id='cornstarch', name='Cornstarch', emoji='🌽', aliases=['cornstarch', 'cornflour']),
+    dict(id='chicken-stock', name='Chicken Stock', emoji='🐔', aliases=['chicken stock']),
+    dict(id='vegetable-stock-cube', name='Vegetable Stock Cube', emoji='🥬', aliases=['vegetable stock cube']),
+]

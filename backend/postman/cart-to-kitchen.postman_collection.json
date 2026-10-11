@@ -240,17 +240,17 @@
       }
     },
     {
-      "name": "Ingredients catalogue (sellable + pantry)",
+      "name": "Ingredients catalogue (80 sellable + 30 pantry)",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"catalogue carries the full TheMealDB pantry\", () => {",
+              "pm.test(\"catalogue is the curated 110 items\", () => {",
               "  pm.response.to.have.status(200);",
               "  const items = pm.response.json();",
-              "  pm.expect(items.length).to.be.at.least(980);",
+              "  pm.expect(items).to.have.lengthOf(110);",
               "  const sellable = items.filter(i => !i.isPantry);",
               "  pm.expect(sellable).to.have.lengthOf(80);",
               "  const tomato = items.find(i => i.id === \"tomato\");",
@@ -259,6 +259,7 @@
               "  const oil = items.find(i => i.id === \"olive-oil\");",
               "  pm.expect(oil.isPantry).to.eql(true);",
               "  pm.expect(oil.usesPerUnit).to.eql(\"infinite\");",
+              "  pm.expect(oil.emoji).to.eql(\"🫒\");",
               "});"
             ]
           }
