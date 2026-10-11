@@ -592,7 +592,7 @@ a { color: inherit; text-decoration: none; }
 .recipe-card-body small { display: flex; align-items: center; gap: 5px; min-height: 35px; margin-top: 8px; color: #65706c; font-size: 0.68rem; }
 .favorite-button { width: 30px; height: 30px; flex: none; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; color: #7e8884; background: var(--muted); cursor: pointer; }
 .favorite-button.active { color: var(--tomato); background: #ffe5de; }
-.recipe-card-actions { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: auto; padding-top: 12px; }
+.recipe-card-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 12px; }
 .match-empty { margin-top: 14px; padding: 35px; border: 1px dashed var(--border); border-radius: 16px; color: var(--muted-foreground); text-align: center; }
 
 
