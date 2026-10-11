@@ -5,6 +5,7 @@ const profilePlaceholder: ProfilePlaceholder = {
   email: "guest@example.com",
   mode: "Guest mode",
   note: "Profile features will be implemented in a later development phase.",
+  avatarUrl: null,
   cookingHistory: [
     {
       recipeId: "1",
