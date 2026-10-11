@@ -7,7 +7,7 @@ export function useProfilePresenter() {
   const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [isAvatarDialogOpen, setAvatarDialogOpen] = useState(false);
   const [profile, setProfile] = useState(getProfilePlaceholder); //TODO: Change placeholder when backend in place
-
+  
   const openUsernameDialog = () => {
     setUsernameDialogOpen(true);
   };
@@ -58,6 +58,23 @@ export function useProfilePresenter() {
     closeEmailDialog();
   };
 
+  // TODO:Implement the actual save logic when backend is in place
+  const handlePasswordSave = (newPassword: string) => {
+    setProfile((prev) => ({
+      ...prev,
+      password: newPassword,
+    }));
+    closePasswordDialog();
+  };
+
+  const handleAvatarSave = async (file: File) => {
+    setProfile((prev) => ({
+      ...prev,
+      avatarUrl: URL.createObjectURL(file),
+    }));
+    closeAvatarDialog();
+  };
+
   return {
     profile,
     isUsernameDialogOpen,
@@ -74,5 +91,7 @@ export function useProfilePresenter() {
     closeAvatarDialog,
     handleUsernameSave,
     handleEmailSave,
+    handlePasswordSave,
+    handleAvatarSave,
   };
 }

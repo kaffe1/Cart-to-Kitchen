@@ -3,6 +3,7 @@ export interface ProfilePlaceholder {
   email: string;
   mode: string;
   note: string;
+  avatarUrl?: string | null;
   cookingHistory: CookedRecipe[];
 }
 

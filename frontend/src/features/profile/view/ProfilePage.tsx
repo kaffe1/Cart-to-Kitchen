@@ -23,6 +23,8 @@ export function ProfilePage() {
     closeAvatarDialog,
     handleUsernameSave,
     handleEmailSave,
+    handlePasswordSave,
+    handleAvatarSave
   } = useProfilePresenter();
 
   return (
@@ -43,7 +45,7 @@ export function ProfilePage() {
         </div>
       </div>
 
-      {isAvatarDialogOpen && <AvatarDialog open onClose={closeAvatarDialog} />}
+      {isAvatarDialogOpen && <AvatarDialog open currentAvatarUrl={profile.avatarUrl} onClose={closeAvatarDialog} onSave={handleAvatarSave} />}
 
       {isUsernameDialogOpen && (
         <UsernameDialog
@@ -64,7 +66,7 @@ export function ProfilePage() {
       )}
 
       {isPasswordDialogOpen && (
-        <PasswordDialog open onClose={closePasswordDialog} />
+        <PasswordDialog open onClose={closePasswordDialog} onSave={handlePasswordSave} />
       )}
     </section>
   );
