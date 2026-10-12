@@ -84,7 +84,7 @@ documented in `backend/README.md`.
 
 ### 2.3 Database schema
 
-Eight tables; every user-owned row is scoped by `user_id` / session ownership so
+Nine tables; every user-owned row is scoped by `user_id` / session ownership so
 isolation is enforced in each query:
 
 | Table | Purpose |
@@ -97,6 +97,7 @@ isolation is enforced in each query:
 | `wallets` | One wallet per user: balance + accrual anchor |
 | `cook_history` | One row per cooked meal; review text + optional photo bytes |
 | `avatars` | At most one PNG/JPEG/WebP per user |
+| `cook_requests` | Persisted completion keys so cook retries cannot consume inventory twice |
 
 ### 2.4 Business rules in force
 
@@ -133,9 +134,10 @@ npx newman run postman/cart-to-kitchen.postman_collection.json \
   -e postman/local.postman_environment.json
 ```
 
-**pytest — pure-function tests only** (wallet grant math, match tier
-boundaries, the review profanity regex): edge cases that cannot be reached
-through live HTTP because the clock or inventory state is not controllable.
+**pytest — unit and isolated HTTP contract tests** (wallet grant math, match
+tiers, review filtering, recipe discovery/normalization, cooking inventory,
+user isolation, idempotent completion). HTTP tests run on SQLite with
+deterministic MealDB fixtures; the live TheMealDB run is opt-in.
 
 ```bash
 pip install -e ".[dev]" && pytest
@@ -155,7 +157,7 @@ concerns do not mix. The rules that keep it that way:
   wallet grant math, checkout transaction. Knows nothing about HTTP (raises
   `AppError` subclasses, never returns status codes).
 - **`app/data/` (persistence layer)** — repositories contain every SQL query;
-  models define the eight tables; `seed.py` is generated from the frontend
+  models define the nine tables; `seed.py` is generated from the frontend
   `dummyData.ts` (regenerate, don't hand-edit, so the two never drift).
 - **`app/integrations/`** — the TheMealDB client (`httpx`), no caching or
   retries: failures map to 502.
