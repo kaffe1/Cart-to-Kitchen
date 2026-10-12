@@ -7,7 +7,7 @@ export function useProfilePresenter() {
   const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [isAvatarDialogOpen, setAvatarDialogOpen] = useState(false);
   const [profile, setProfile] = useState(getProfilePlaceholder); //TODO: Change placeholder when backend in place
-  
+
   const isGuestUser = profile.mode === "guest";
 
   const openUsernameDialog = () => {
@@ -61,7 +61,10 @@ export function useProfilePresenter() {
   };
 
   // TODO:Implement the actual save logic when backend is in place
-  const handlePasswordSave = async (currentPassword: string, newPassword: string) => {
+  const handlePasswordSave = async (
+    currentPassword: string,
+    newPassword: string,
+  ) => {
     void currentPassword;
     void newPassword;
     closePasswordDialog();

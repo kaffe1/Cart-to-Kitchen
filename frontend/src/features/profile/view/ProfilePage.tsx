@@ -38,7 +38,10 @@ export function ProfilePage() {
         <h1>Hello, Guest User</h1>
         <p>Please sign up or sign in to access your profile.</p>
         <Button onClick={() => navigate(appRoutes.login)}> Sign In</Button>
-        <Button variant="secondary" onClick={() => navigate(appRoutes.register)}>
+        <Button
+          variant="secondary"
+          onClick={() => navigate(appRoutes.register)}
+        >
           Sign Up
         </Button>
       </section>
@@ -63,7 +66,14 @@ export function ProfilePage() {
         </div>
       </div>
 
-      {isAvatarDialogOpen && <AvatarDialog open currentAvatarUrl={profile.avatarUrl} onClose={closeAvatarDialog} onSave={handleAvatarSave} />}
+      {isAvatarDialogOpen && (
+        <AvatarDialog
+          open
+          currentAvatarUrl={profile.avatarUrl}
+          onClose={closeAvatarDialog}
+          onSave={handleAvatarSave}
+        />
+      )}
 
       {isUsernameDialogOpen && (
         <UsernameDialog
@@ -84,7 +94,11 @@ export function ProfilePage() {
       )}
 
       {isPasswordDialogOpen && (
-        <PasswordDialog open onClose={closePasswordDialog} onSave={handlePasswordSave} />
+        <PasswordDialog
+          open
+          onClose={closePasswordDialog}
+          onSave={handlePasswordSave}
+        />
       )}
     </section>
   );
