@@ -1,8 +1,7 @@
 export interface ProfilePlaceholder {
   username: string;
-  email: string;
-  mode: string;
-  note: string;
+  email: string | null;
+  mode: "account" | "guest";
   avatarUrl?: string | null;
   cookingHistory: CookedRecipe[];
 }
