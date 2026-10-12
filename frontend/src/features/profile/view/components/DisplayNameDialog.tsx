@@ -10,22 +10,22 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { useState } from "react";
 
-type UsernameDialogProps = {
+type DisplayNameDialogProps = {
   open: boolean;
-  currentUsername: string;
-  onSave: (newUsername: string) => void;
+  currentDisplayName: string;
+  onSave: (newDisplayName: string) => void;
   onClose: () => void;
 };
 
-export function UsernameDialog({
+export function DisplayNameDialog({
   open,
-  currentUsername,
+  currentDisplayName,
   onSave,
   onClose,
-}: UsernameDialogProps) {
-  const [newUsername, setNewUsername] = useState(currentUsername);
-  const handleSaveCB = () => {
-    onSave(newUsername);
+}: DisplayNameDialogProps) {
+  const [newDisplayName, setNewDisplayName] = useState(currentDisplayName);
+  const handleSave = () => {
+    onSave(newDisplayName);
   };
 
   return (
@@ -37,18 +37,18 @@ export function UsernameDialog({
     >
       <DialogPopup>
         <DialogHeader>
-          <DialogTitle>Change Username</DialogTitle>
+          <DialogTitle>Change Display Name</DialogTitle>
         </DialogHeader>
 
         <Input
-          placeholder="New Username"
-          value={newUsername}
-          onChange={(e) => setNewUsername(e.target.value)}
+          placeholder="New Display Name"
+          value={newDisplayName}
+          onChange={(e) => setNewDisplayName(e.target.value)}
         />
 
         <DialogFooter>
           <DialogClose className="border px-4 py-2">Cancel</DialogClose>
-          <Button onClick={handleSaveCB}>Save</Button>
+          <Button onClick={handleSave}>Save</Button>
         </DialogFooter>
       </DialogPopup>
     </Dialog>

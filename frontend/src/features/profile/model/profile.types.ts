@@ -1,5 +1,5 @@
 export interface ProfilePlaceholder {
-  username: string;
+  displayName: string;
   email: string | null;
   mode: "account" | "guest";
   avatarUrl?: string | null;
@@ -7,7 +7,7 @@ export interface ProfilePlaceholder {
 }
 
 /* export type Profile = {
-  username: string;
+  displayName: string;
   email: string;
   avatar: Avatar;
   cookingHistory: CookedRecipe[];

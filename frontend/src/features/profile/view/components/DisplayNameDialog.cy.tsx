@@ -1,12 +1,12 @@
-import { UsernameDialog } from "./UsernameDialog";
+import { DisplayNameDialog } from "./DisplayNameDialog";
 
-describe("<UsernameDialog />", () => {
-  it("calls onSave with the entered username when save is clicked", () => {
+describe("<DisplayNameDialog />", () => {
+  it("calls onSave with the entered display name when save is clicked", () => {
     const onSave = cy.stub().as("onSave");
     cy.mount(
-      <UsernameDialog
+      <DisplayNameDialog
         open={true}
-        currentUsername="old-name"
+        currentDisplayName="old-name"
         onClose={cy.stub()}
         onSave={onSave}
       />,
@@ -19,9 +19,9 @@ describe("<UsernameDialog />", () => {
   it("calls onClose when Cancel is clicked", () => {
     const onClose = cy.stub().as("onClose");
     cy.mount(
-      <UsernameDialog
+      <DisplayNameDialog
         open
-        currentUsername="old-name"
+        currentDisplayName="old-name"
         onSave={cy.stub()}
         onClose={onClose}
       />,

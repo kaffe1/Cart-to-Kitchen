@@ -1,7 +1,7 @@
 import { useProfilePresenter } from "../presenter/useProfilePresenter";
 import { ProfilePanel } from "./components/ProfilePanel";
 import { HistoryPanel } from "./components/HistoryPanel";
-import { UsernameDialog } from "./components/UsernameDialog";
+import { DisplayNameDialog } from "./components/DisplayNameDialog";
 import { PasswordDialog } from "./components/PasswordDialog";
 import { EmailDialog } from "./components/EmailDialog";
 import { AvatarDialog } from "./components/AvatarDialog";
@@ -14,9 +14,9 @@ export function ProfilePage() {
   const {
     profile,
     isGuestUser,
-    isUsernameDialogOpen,
-    openUsernameDialog,
-    closeUsernameDialog,
+    isDisplayNameDialogOpen,
+    openDisplayNameDialog,
+    closeDisplayNameDialog,
     isEmailDialogOpen,
     openEmailDialog,
     closeEmailDialog,
@@ -26,7 +26,7 @@ export function ProfilePage() {
     isAvatarDialogOpen,
     openAvatarDialog,
     closeAvatarDialog,
-    handleUsernameSave,
+    handleDisplayNameSave,
     handleEmailSave,
     handlePasswordSave,
     handleAvatarSave,
@@ -50,11 +50,11 @@ export function ProfilePage() {
 
   return (
     <section className="page-shell placeholder-page">
-      <h1>Hello {profile.username}!</h1>
+      <h1>Hello {profile.displayName}!</h1>
       <div className="flex flex-row justify-between">
         <ProfilePanel
           profile={profile}
-          onUsernameChange={openUsernameDialog}
+          onDisplayNameChange={openDisplayNameDialog}
           onAvatarChange={openAvatarDialog}
           onPasswordChange={openPasswordDialog}
           onEmailChange={openEmailDialog}
@@ -75,12 +75,12 @@ export function ProfilePage() {
         />
       )}
 
-      {isUsernameDialogOpen && (
-        <UsernameDialog
+      {isDisplayNameDialogOpen && (
+        <DisplayNameDialog
           open
-          currentUsername={profile.username}
-          onClose={closeUsernameDialog}
-          onSave={handleUsernameSave}
+          currentDisplayName={profile.displayName}
+          onClose={closeDisplayNameDialog}
+          onSave={handleDisplayNameSave}
         />
       )}
 
