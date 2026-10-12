@@ -5,20 +5,44 @@ import {
   DialogFooter,
   DialogTitle,
   DialogClose,
-} from '@/shared/components/ui/dialog';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
+} from "@/shared/components/ui/dialog";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { useState } from "react";
 
 type PasswordDialogProps = {
   open: boolean;
   onClose: () => void;
+  onSave: (currentPassword: string, newPassword: string) => Promise<void>;
 };
 
-export function PasswordDialog({
-  open,
-  onClose,
-}: PasswordDialogProps) {
-  
+export function PasswordDialog({ open, onClose, onSave }: PasswordDialogProps) {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    setError(null);
+    setIsSaving(true);
+    try {
+      await onSave(currentPassword, newPassword);
+    } catch {
+      setError("Failed to change password");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const passwordsMatch = newPassword === confirmPassword;
+  const passwordsMismatch = !passwordsMatch && confirmPassword.length > 0;
+  const saveAllowed =
+    currentPassword.length > 0 &&
+    newPassword.length > 0 &&
+    passwordsMatch &&
+    !isSaving;
+
   return (
     <Dialog
       open={open}
@@ -31,15 +55,39 @@ export function PasswordDialog({
           <DialogTitle>Change password</DialogTitle>
         </DialogHeader>
 
-        <Input className="mb-2"
+        <div className="flex flex-col gap-4">
+          <Input
+            type="password"
+            placeholder="Enter current password"
+            autoComplete="current-password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+          <Input
+            type="password"
             placeholder="Enter new password"
-        />
-        <Input
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          <Input
+            type="password"
             placeholder="Confirm new password"
-        />
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          {passwordsMismatch && (
+            <p className="text-sm text-destructive">Passwords do not match.</p>
+          )}
+          {error && <p className="text-sm text-destructive">{error}</p>}
+        </div>
 
         <DialogFooter>
           <DialogClose className="border px-4 py-2">Cancel</DialogClose>
+          <Button onClick={handleSave} disabled={!saveAllowed}>
+            {isSaving ? "Saving…" : "Save"}
+          </Button>
         </DialogFooter>
       </DialogPopup>
     </Dialog>

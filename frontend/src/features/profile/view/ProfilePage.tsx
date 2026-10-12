@@ -5,10 +5,15 @@ import { UsernameDialog } from "./components/UsernameDialog";
 import { PasswordDialog } from "./components/PasswordDialog";
 import { EmailDialog } from "./components/EmailDialog";
 import { AvatarDialog } from "./components/AvatarDialog";
+import { Button } from "@/shared/components/ui/button";
+import { appRoutes } from "@/app/routes";
+import { useNavigate } from "react-router-dom";
 
 export function ProfilePage() {
+  const navigate = useNavigate();
   const {
     profile,
+    isGuestUser,
     isUsernameDialogOpen,
     openUsernameDialog,
     closeUsernameDialog,
@@ -24,8 +29,21 @@ export function ProfilePage() {
     handleUsernameSave,
     handleEmailSave,
     handlePasswordSave,
-    handleAvatarSave
+    handleAvatarSave,
   } = useProfilePresenter();
+
+  if (isGuestUser) {
+    return (
+      <section className="page-shell placeholder-page">
+        <h1>Hello, Guest User</h1>
+        <p>Please sign up or sign in to access your profile.</p>
+        <Button onClick={() => navigate(appRoutes.login)}> Sign In</Button>
+        <Button variant="secondary" onClick={() => navigate(appRoutes.register)}>
+          Sign Up
+        </Button>
+      </section>
+    );
+  }
 
   return (
     <section className="page-shell placeholder-page">
@@ -59,7 +77,7 @@ export function ProfilePage() {
       {isEmailDialogOpen && (
         <EmailDialog
           open
-          currentEmail={profile.email}
+          currentEmail={profile.email ?? ""}
           onSave={handleEmailSave}
           onClose={closeEmailDialog}
         />
