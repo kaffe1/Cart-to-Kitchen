@@ -1,10 +1,10 @@
 import type { ProfilePlaceholder } from "./profile.types";
 
 const profilePlaceholder: ProfilePlaceholder = {
-  username: "Guest cook",
+  displayName: "Guest cook",
   email: "guest@example.com",
-  mode: "guest",
-  //mode: "account",
+  //mode: "guest",
+  mode: "account",
   avatarUrl: null,
   cookingHistory: [
     {

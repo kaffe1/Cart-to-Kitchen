@@ -2,7 +2,7 @@ import { useState } from "react";
 import { getProfilePlaceholder } from "../model/profile.api";
 
 export function useProfilePresenter() {
-  const [isUsernameDialogOpen, setUsernameDialogOpen] = useState(false);
+  const [isDisplayNameDialogOpen, setDisplayNameDialogOpen] = useState(false);
   const [isEmailDialogOpen, setEmailDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [isAvatarDialogOpen, setAvatarDialogOpen] = useState(false);
@@ -10,12 +10,12 @@ export function useProfilePresenter() {
 
   const isGuestUser = profile.mode === "guest";
 
-  const openUsernameDialog = () => {
-    setUsernameDialogOpen(true);
+  const openDisplayNameDialog = () => {
+    setDisplayNameDialogOpen(true);
   };
 
-  const closeUsernameDialog = () => {
-    setUsernameDialogOpen(false);
+  const closeDisplayNameDialog = () => {
+    setDisplayNameDialogOpen(false);
   };
 
   const openEmailDialog = () => {
@@ -43,12 +43,12 @@ export function useProfilePresenter() {
   };
 
   // TODO: Implement the actual save logic when backend is in place
-  const handleUsernameSave = (newUsername: string) => {
+  const handleDisplayNameSave = (newDisplayName: string) => {
     setProfile((prev) => ({
       ...prev,
-      username: newUsername,
+      displayName: newDisplayName,
     }));
-    closeUsernameDialog();
+    closeDisplayNameDialog();
   };
 
   // TODO: Implement the actual save logic when backend is in place
@@ -81,9 +81,9 @@ export function useProfilePresenter() {
   return {
     profile,
     isGuestUser,
-    isUsernameDialogOpen,
-    openUsernameDialog,
-    closeUsernameDialog,
+    isDisplayNameDialogOpen,
+    openDisplayNameDialog,
+    closeDisplayNameDialog,
     isEmailDialogOpen,
     openEmailDialog,
     closeEmailDialog,
@@ -93,7 +93,7 @@ export function useProfilePresenter() {
     isAvatarDialogOpen,
     openAvatarDialog,
     closeAvatarDialog,
-    handleUsernameSave,
+    handleDisplayNameSave,
     handleEmailSave,
     handlePasswordSave,
     handleAvatarSave,

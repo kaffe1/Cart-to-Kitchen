@@ -5,7 +5,7 @@ import { ProfilePlaceholder } from "../../model/profile.types";
 
 type ProfilePanelProps = {
   profile: ProfilePlaceholder; // ProfilePlaceholder
-  onUsernameChange: () => void;
+  onDisplayNameChange: () => void;
   onAvatarChange: () => void;
   onPasswordChange: () => void;
   onEmailChange: () => void;
@@ -14,7 +14,7 @@ type ProfilePanelProps = {
 
 export function ProfilePanel({
   profile,
-  onUsernameChange,
+  onDisplayNameChange,
   onAvatarChange,
   onPasswordChange,
   onEmailChange,
@@ -27,7 +27,7 @@ export function ProfilePanel({
           {profile.avatarUrl ? (
             <img
               src={profile.avatarUrl}
-              alt={`${profile.username}'s avatar`}
+              alt={`${profile.displayName}'s avatar`}
               className="h-16 w-16 rounded-full object-cover"
             />
           ) : (
@@ -35,7 +35,7 @@ export function ProfilePanel({
           )}
           <Button onClick={onAvatarChange}>Change Avatar</Button>
         </div>
-        <Button onClick={onUsernameChange}>Change Username</Button>
+        <Button onClick={onDisplayNameChange}>Change Display Name</Button>
         <Button onClick={onPasswordChange}>Change Password</Button>
         <Button onClick={onEmailChange}>Change Email</Button>
         <Button variant="outline" onClick={onSignOut}>
