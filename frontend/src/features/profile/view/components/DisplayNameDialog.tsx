@@ -24,11 +24,12 @@ export function DisplayNameDialog({
   onClose,
 }: DisplayNameDialogProps) {
   const [newDisplayName, setNewDisplayName] = useState(currentDisplayName);
-const [error, setError] = useState<string | null>(null);
-const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const trimmed = newDisplayName.trim();
-  const saveAllowed = trimmed.length > 0 && trimmed !== currentDisplayName && !isSaving;
-  
+  const saveAllowed =
+    trimmed.length > 0 && trimmed !== currentDisplayName && !isSaving;
+
   const handleSave = async () => {
     setError(null);
     setIsSaving(true);

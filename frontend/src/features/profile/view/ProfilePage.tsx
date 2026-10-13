@@ -31,13 +31,14 @@ export function ProfilePage() {
     handleEmailSave,
     handlePasswordSave,
     handleAvatarSave,
+    isLoading,
+    loadError,
   } = useProfilePresenter();
 
-  if (!profile) {
-  return <p>Loading profile...</p>;
-}
+  if (isLoading) return <p>Loading profile…</p>;
+  if (loadError) return <p>{loadError}</p>;
 
-  if (isGuestUser) {
+  if (isGuestUser || !profile) {
     return (
       <section className="page-shell placeholder-page">
         <h1>Hello, Guest User</h1>
@@ -45,7 +46,7 @@ export function ProfilePage() {
         <Button onClick={() => navigate(appRoutes.login)}> Sign In</Button>
         <Button
           variant="secondary"
-          onClick={() => navigate(appRoutes.register)} // TODO: Send to presenter or keep here?
+          onClick={() => navigate(appRoutes.register)}
         >
           Sign Up
         </Button>

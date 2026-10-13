@@ -9,7 +9,8 @@ export async function requestJson<T>(
   init?: RequestInit,
 ): Promise<T> {
   const headers = new Headers(init?.headers);
-  if (init?.body && !headers.has('Content-Type'))
+  const isForm = init?.body instanceof FormData;
+  if (init?.body && !isForm && !headers.has('Content-Type'))
     headers.set('Content-Type', 'application/json');
   let response: Response;
   let body: string;

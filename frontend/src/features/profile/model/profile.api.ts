@@ -28,7 +28,6 @@ export function getProfilePlaceholder(): ProfilePlaceholder {
   return profilePlaceholder;
 }
 
-
 type MeDto = {
   id: string;
   displayName: string;
@@ -36,7 +35,7 @@ type MeDto = {
   mode: "account" | "guest";
   createdAt: string;
   avatarUrl?: string | null;
-}
+};
 
 type MeResponse = {
   user: MeDto;
@@ -53,37 +52,39 @@ const toProfile = (me: MeDto): Profile => ({
 export const getProfile = async (): Promise<Profile> => {
   const resp = await req<MeResponse>("/auth/me");
   return toProfile(resp.user);
-}
+};
 
-export const updateDisplayName = async (newDisplayName: string): Promise<void> => {
+export const updateDisplayName = async (
+  newDisplayName: string,
+): Promise<void> => {
   await req<MeDto>("/me", {
     method: "PATCH",
-    body: JSON.stringify({ display_name: newDisplayName }),
+    body: JSON.stringify({ displayName: newDisplayName }),
   });
-}
+};
 
-// TODO: Update Avatar
-export const updateAvatar = async (file: File): Promise<void> => {
+export const updateAvatar = (file: File) => {
   const formData = new FormData();
   formData.append("image", file);
-  await req("/me/avatar", {
-    method: "PUT",
-    body: formData,
-  });
-}
+  return req<MeDto>("/me/avatar", { method: "PUT", body: formData });
+};
 
-// TODO: Update Email
 export const updateEmail = async (newEmail: string): Promise<void> => {
   await req<MeDto>("/me", {
     method: "PATCH",
     body: JSON.stringify({ email: newEmail }),
   });
-}
+};
 
-// TODO: Update Password
-export const updatePassword = async (currentPassword: string, newPassword: string): Promise<void> => {
+export const updatePassword = async (
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> => {
   await req("/me", {
     method: "PATCH",
-    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+    body: JSON.stringify({
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    }),
   });
-}
+};
