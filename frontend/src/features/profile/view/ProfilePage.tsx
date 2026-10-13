@@ -13,6 +13,7 @@ export function ProfilePage() {
   const navigate = useNavigate();
   const {
     profile,
+    testProfile,
     isGuestUser,
     isDisplayNameDialogOpen,
     openDisplayNameDialog,
@@ -30,9 +31,14 @@ export function ProfilePage() {
     handleEmailSave,
     handlePasswordSave,
     handleAvatarSave,
+    isLoading,
+    loadError,
   } = useProfilePresenter();
 
-  if (isGuestUser) {
+  if (isLoading) return <p>Loading profile…</p>;
+  if (loadError) return <p>{loadError}</p>;
+
+  if (isGuestUser || !profile) {
     return (
       <section className="page-shell placeholder-page">
         <h1>Hello, Guest User</h1>
@@ -62,7 +68,7 @@ export function ProfilePage() {
         />
 
         <div className="flex flex-row m-6">
-          <HistoryPanel cookedRecipes={profile.cookingHistory} />
+          <HistoryPanel cookedRecipes={testProfile.cookingHistory} />
         </div>
       </div>
 

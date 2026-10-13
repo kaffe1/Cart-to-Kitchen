@@ -8,20 +8,25 @@ from sqlalchemy.orm import Session
 
 from ..config import Settings
 from ..data.models import User
-from ..data.repositories import UserRepository
+from ..data.repositories import ShoppingRepository, UserRepository
 from ..errors import InvalidCredentials
 from ..security import create_session_token, hash_password, verify_password
 from . import wallet_service
 
+AVATAR_URL = "/api/v1/me/avatar"
 
-def user_public(row: User) -> dict:
+def user_public(row: User, *, has_avatar: bool = False) -> dict:
     return {
         "id": str(row.id),
         "displayName": row.display_name,
         "email": row.email,
         "mode": row.mode,
         "createdAt": row.created_at.isoformat(),
+        "avatarUrl": AVATAR_URL if has_avatar else None,
     }
+
+def _has_avatar(db: Session, user_id: int) -> bool:
+    return ShoppingRepository(db).avatar(user_id) is not None
 
 
 def issue_token(row: User, settings: Settings) -> str:
@@ -50,7 +55,7 @@ def login(db: Session, settings: Settings, *, email: str, password: str) -> dict
         password, user.password_hash
     ):
         raise InvalidCredentials("wrong email or password")
-    return {"user": user_public(user), "accessToken": issue_token(user, settings)}
+    return {"user": user_public(user, has_avatar=_has_avatar(db, user.id)), "accessToken": issue_token(user, settings)}
 
 
 def guest(db: Session, settings: Settings) -> dict:
@@ -67,4 +72,4 @@ def guest(db: Session, settings: Settings) -> dict:
 
 
 def me(db: Session, user_id: int) -> dict:
-    return {"user": user_public(UserRepository(db).by_id(user_id))}
+    return {"user": user_public(UserRepository(db).by_id(user_id), has_avatar=_has_avatar(db, user_id))}

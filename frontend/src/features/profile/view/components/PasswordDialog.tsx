@@ -30,6 +30,7 @@ export function PasswordDialog({ open, onClose, onSave }: PasswordDialogProps) {
       await onSave(currentPassword, newPassword);
     } catch {
       setError("Failed to change password");
+      // TODO: APIError?
     } finally {
       setIsSaving(false);
     }

@@ -1,14 +1,48 @@
-import { useState } from "react";
-import { getProfilePlaceholder } from "../model/profile.api";
+import { useEffect, useState } from "react";
+import { Profile } from "../model/profile.types";
+import {
+  getProfile,
+  updateDisplayName,
+  updateEmail,
+  getProfilePlaceholder,
+  updatePassword,
+  updateAvatar,
+} from "../model/profile.api";
+import { ApiError } from "@/shared/api/apiError";
 
 export function useProfilePresenter() {
   const [isDisplayNameDialogOpen, setDisplayNameDialogOpen] = useState(false);
   const [isEmailDialogOpen, setEmailDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [isAvatarDialogOpen, setAvatarDialogOpen] = useState(false);
-  const [profile, setProfile] = useState(getProfilePlaceholder); //TODO: Change placeholder when backend in place
+  const [testProfile, setTestProfile] = useState(getProfilePlaceholder); // only for testing
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const isGuestUser = profile.mode === "guest";
+  useEffect(() => {
+    getProfile()
+      .then(setProfile)
+      .catch((error: unknown) => {
+        if (
+          error instanceof ApiError &&
+          (error.code === "auth_required" || error.code === "invalid_session")
+        ) {
+          setLoadError("You must be signed in to view your profile.");
+        } else {
+          setLoadError("Could not load your profile.");
+        }
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
+  const isGuestUser =
+    !isLoading && !loadError && (profile === null || profile.mode === "guest");
+
+  const patchProfile = (patch: Partial<Profile>) =>
+    setProfile((prev) => (prev ? { ...prev, ...patch } : prev));
 
   const openDisplayNameDialog = () => {
     setDisplayNameDialogOpen(true);
@@ -42,44 +76,37 @@ export function useProfilePresenter() {
     setAvatarDialogOpen(false);
   };
 
-  // TODO: Implement the actual save logic when backend is in place
-  const handleDisplayNameSave = (newDisplayName: string) => {
-    setProfile((prev) => ({
-      ...prev,
-      displayName: newDisplayName,
-    }));
+  const handleDisplayNameSave = async (newDisplayName: string) => {
+    await updateDisplayName(newDisplayName);
+    patchProfile({ displayName: newDisplayName });
     closeDisplayNameDialog();
   };
 
-  // TODO: Implement the actual save logic when backend is in place
-  const handleEmailSave = (newEmail: string) => {
-    setProfile((prev) => ({
-      ...prev,
-      email: newEmail,
-    }));
+  const handleEmailSave = async (newEmail: string) => {
+    await updateEmail(newEmail);
+    patchProfile({ email: newEmail });
     closeEmailDialog();
   };
 
-  // TODO:Implement the actual save logic when backend is in place
   const handlePasswordSave = async (
     currentPassword: string,
     newPassword: string,
   ) => {
-    void currentPassword;
-    void newPassword;
+    await updatePassword(currentPassword, newPassword);
     closePasswordDialog();
   };
 
   const handleAvatarSave = async (file: File) => {
-    setProfile((prev) => ({
-      ...prev,
-      avatarUrl: URL.createObjectURL(file),
-    }));
+    const me = await updateAvatar(file);
+    patchProfile({
+      avatarUrl: me.avatarUrl ? `${me.avatarUrl}?v=${Date.now()}` : null,
+    });
     closeAvatarDialog();
   };
 
   return {
     profile,
+    testProfile,
     isGuestUser,
     isDisplayNameDialogOpen,
     openDisplayNameDialog,
@@ -97,5 +124,7 @@ export function useProfilePresenter() {
     handleEmailSave,
     handlePasswordSave,
     handleAvatarSave,
+    isLoading,
+    loadError,
   };
 }
