@@ -1,4 +1,4 @@
-import { getDemoState, subscribeDemoState } from './demoBackend';
+import { appSession } from './appSession';
 
-export const getShellSnapshot = getDemoState;
-export const subscribeShell = subscribeDemoState;
+export const getShellSnapshot = appSession.getSnapshot;
+export const subscribeShell = appSession.subscribe;

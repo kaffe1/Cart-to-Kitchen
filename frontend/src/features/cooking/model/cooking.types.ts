@@ -6,9 +6,3 @@ export interface CookingHistoryEntry {
   completedAt: string;
   consumedIngredientIds: string[];
 }
-
-export interface CookingPlaceholder {
-  recipeId: string;
-  title: string;
-  sampleStep: string;
-}

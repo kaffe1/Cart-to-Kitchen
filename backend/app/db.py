@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
@@ -12,8 +11,7 @@ from sqlalchemy.pool import StaticPool
 from .config import get_settings
 from .data.models import Base, Ingredient
 from .data.seed import INGREDIENTS
-
-PANTRY_NAMES_FILE = Path(__file__).parent / "data" / "mealdb_pantry.txt"
+from .data.pantry import PANTRY, SUPPORTED_IDS
 
 
 def make_engine(url: str | None = None):
@@ -28,38 +26,26 @@ def make_session_factory(engine) -> sessionmaker:
     return sessionmaker(bind=engine, expire_on_commit=False)
 
 
-def _slug(name: str) -> str:
-    return "".join(c if c.isalnum() else "-" for c in name.lower()).strip("-")
-
-
 def _pantry_rows() -> list[Ingredient]:
-    """Every TheMealDB ingredient we do not sell is kitchen pantry stock:
-    unlimited uses, never purchasable, kept for accurate recipe resolution."""
-    rows, seen = [], set()
-    for name in PANTRY_NAMES_FILE.read_text(encoding="utf-8").splitlines():
-        name = name.strip()
-        slug = _slug(name)
-        if not name or slug in seen:
-            continue
-        seen.add(slug)
-        rows.append(
+    """Only the explicit default pantry is unlimited, not all of MealDB."""
+    return [
             Ingredient(
-                id=slug,
+                id=ingredient_id,
                 name=name,
-                emoji="",
+                emoji=emoji,
                 category="Pantry",
                 uses_per_unit=None,
                 price_sek=0,
-                aliases_json=json.dumps([name.lower()]),
+                aliases_json=json.dumps([name.lower(), *aliases]),
                 is_pantry=True,
-                color="#cccccc",
+                color="#88a77b",
             )
-        )
-    return rows
+        for ingredient_id, name, emoji, aliases in PANTRY
+    ]
 
 
 def seed_ingredients(session) -> int:
-    """Insert catalogue rows whose id is not present yet (idempotent)."""
+    """Reconcile the active 110 items; retire legacy pantry without deleting data."""
     catalogue = [
         Ingredient(
             id=row["id"],
@@ -74,11 +60,21 @@ def seed_ingredients(session) -> int:
         )
         for row in INGREDIENTS
     ] + _pantry_rows()
-    known = set(session.scalars(select(Ingredient.id)))
-    fresh = [row for row in catalogue if row.id not in known]
-    session.add_all(fresh)
+    known = {row.id: row for row in session.scalars(select(Ingredient))}
+    for row in catalogue:
+        existing = known.get(row.id)
+        if existing is None:
+            session.add(row)
+        else:
+            for field in ("name", "emoji", "category", "uses_per_unit", "price_sek", "aliases_json", "is_pantry", "color"):
+                setattr(existing, field, getattr(row, field))
+    for row in known.values():
+        if row.id not in SUPPORTED_IDS:
+            # Preserve foreign-key references and old history; never grant infinite uses.
+            row.is_pantry = False
+            row.uses_per_unit = 0
     session.commit()
-    return len(known) + len(fresh)
+    return len(catalogue)
 
 
 def bootstrap(engine) -> None:

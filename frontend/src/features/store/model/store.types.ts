@@ -1,3 +1,5 @@
+import type { InventoryItem } from '../../kitchen/model/kitchen.types';
+
 export type IngredientCategory =
   | 'Vegetables & Fruits'
   | 'Meat & Seafood'
@@ -32,13 +34,17 @@ export interface Wallet {
   hourlyGrantSek: number;
 }
 
-export interface ShoppingListItem {
-  ingredientId: string;
-  sourceRecipeId: string | null;
-}
-
 export interface CheckoutResult {
   purchasedUnits: number;
   spentSek: number;
   remainingBalanceSek: number;
+}
+
+export interface ShoppingSessionSnapshot {
+  id: number;
+  status: 'active' | 'checked_out';
+  createdAt: string;
+  wallet: Wallet;
+  cart: CartLine[];
+  inventory: InventoryItem[];
 }

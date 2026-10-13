@@ -1,4 +1,5 @@
 import type { Ingredient, IngredientCategory } from '../../features/store/model/store.types';
+import type { Recipe } from '../../features/recipes/model/recipes.types';
 
 function ingredient(
   id: string,
@@ -54,17 +55,17 @@ export const storeIngredients: Ingredient[] = [
   ingredient('avocado', '🥑', 'Avocado', 'Vegetables & Fruits', 3, 29, ['avocado'], '#628446'),
   ingredient('canned-tomatoes', '🥫', 'Canned Tomatoes', 'Vegetables & Fruits', 3, 18, ['canned tomatoes'], '#c74231'),
   ingredient('tomato-puree', '🥫', 'Tomato Puree', 'Vegetables & Fruits', 3, 16, ['tomato puree'], '#a92e26'),
-  ingredient('chicken-breast', '🍗', 'Chicken Breast', 'Meat & Seafood', 1, 58, ['chicken breast'], '#d69a78'),
+  ingredient('chicken-breast', '🍗', 'Chicken', 'Meat & Seafood', 1, 58, ['chicken', 'chicken breast'], '#d69a78'),
   ingredient('beef', '🥩', 'Beef', 'Meat & Seafood', 1, 74, ['beef'], '#9d3e36'),
   ingredient('minced-beef', '🥩', 'Minced Beef', 'Meat & Seafood', 1, 62, ['minced beef', 'ground beef'], '#a64b42'),
   ingredient('bacon', '🥓', 'Bacon', 'Meat & Seafood', 3, 42, ['bacon'], '#bd594d'),
   ingredient('ham', '🍖', 'Ham', 'Meat & Seafood', 3, 40, ['ham'], '#d77e79'),
   ingredient('lamb', '🐑', 'Lamb', 'Meat & Seafood', 1, 79, ['lamb'], '#9d4d43'),
   ingredient('pork', '🐖', 'Pork', 'Meat & Seafood', 1, 61, ['pork'], '#d38378'),
-  ingredient('prawns', '🦐', 'Prawns', 'Meat & Seafood', 1, 69, ['prawns', 'shrimp'], '#e27a5b'),
-  ingredient('salmon', '🐟', 'Salmon', 'Meat & Seafood', 1, 78, ['salmon'], '#e87961'),
+  ingredient('prawns', '🦐', 'Prawns & Shrimp', 'Meat & Seafood', 1, 69, ['prawns', 'shrimp'], '#e27a5b'),
+  ingredient('salmon', '🐟', 'Salmon & Trout', 'Meat & Seafood', 1, 78, ['salmon'], '#e87961'),
   ingredient('tuna', '🐠', 'Tuna', 'Meat & Seafood', 3, 39, ['tuna'], '#718a9d'),
-  ingredient('cod', '🐟', 'Cod', 'Meat & Seafood', 1, 66, ['cod'], '#d2d9d5'),
+  ingredient('cod', '🐟', 'White Fish', 'Meat & Seafood', 1, 66, ['cod'], '#d2d9d5'),
   ingredient('sausages', '🌭', 'Sausages', 'Meat & Seafood', 3, 43, ['sausage', 'sausages'], '#b95d47'),
   ingredient('egg', '🥚', 'Egg', 'Dairy & Eggs', 3, 24, ['egg', 'eggs'], '#efc958'),
   ingredient('cheese', '🧀', 'Cheese', 'Dairy & Eggs', 3, 35, ['cheese'], '#edb43a'),
@@ -78,7 +79,7 @@ export const storeIngredients: Ingredient[] = [
   ingredient('cream-cheese', '🧀', 'Cream Cheese', 'Dairy & Eggs', 3, 36, ['cream cheese'], '#eee7d4'),
   ingredient('bread', '🍞', 'Bread', 'Grains & Staples', 3, 25, ['bread'], '#bd7c45'),
   ingredient('rice', '🍚', 'Rice', 'Grains & Staples', 3, 26, ['rice'], '#e7dfc9'),
-  ingredient('spaghetti', '🍝', 'Spaghetti', 'Grains & Staples', 3, 28, ['spaghetti'], '#e1b64c'),
+  ingredient('spaghetti', '🍝', 'Pasta', 'Grains & Staples', 3, 28, ['spaghetti'], '#e1b64c'),
   ingredient('noodles', '🍜', 'Noodles', 'Grains & Staples', 3, 26, ['noodles'], '#d8af4c'),
   ingredient('flour', '🌾', 'Flour', 'Grains & Staples', 3, 19, ['flour', 'plain flour'], '#e9dfc8'),
   ingredient('sugar', '🍬', 'Sugar', 'Grains & Staples', 3, 18, ['sugar'], '#e7e4df'),
@@ -88,7 +89,7 @@ export const storeIngredients: Ingredient[] = [
   ingredient('tortillas', '🌮', 'Tortillas', 'Grains & Staples', 3, 27, ['tortilla', 'tortillas'], '#d5ac68'),
   ingredient('breadcrumbs', '🍞', 'Breadcrumbs', 'Grains & Staples', 3, 21, ['breadcrumbs'], '#b77d43'),
   ingredient('tofu', '⬜', 'Tofu', 'Grains & Staples', 3, 24, ['tofu'], '#ede5cf'),
-  ingredient('kidney-beans', '🫘', 'Kidney Beans', 'Grains & Staples', 3, 24, ['kidney bean', 'kidney beans'], '#98443c'),
+  ingredient('kidney-beans', '🫘', 'Beans', 'Grains & Staples', 3, 24, ['kidney bean', 'kidney beans'], '#98443c'),
   ingredient('puff-pastry', '🥐', 'Puff Pastry', 'Grains & Staples', 3, 35, ['puff pastry'], '#d6a35f'),
   ingredient('rice-noodles', '🍜', 'Rice Noodles', 'Grains & Staples', 3, 27, ['rice noodles'], '#e0d4b8'),
   ingredient('yeast', '🍞', 'Yeast', 'Grains & Staples', 3, 15, ['yeast'], '#b99b70'),
@@ -99,10 +100,135 @@ export const storeIngredients: Ingredient[] = [
   ingredient('jam', '🍓', 'Jam', 'Other Ingredients', 3, 27, ['jam'], '#b8394a'),
   ingredient('almonds', '🌰', 'Almonds', 'Other Ingredients', 3, 34, ['almond', 'almonds'], '#b88759'),
   ingredient('walnuts', '🌰', 'Walnuts', 'Other Ingredients', 3, 35, ['walnut', 'walnuts'], '#9d6d45'),
-  ingredient('raisins', '🍇', 'Raisins', 'Other Ingredients', 3, 24, ['raisin', 'raisins'], '#68434b'),
+  ingredient('raisins', '🍇', 'Raisins & Currants', 'Other Ingredients', 3, 24, ['raisin', 'raisins'], '#68434b'),
   ingredient('ice-cream', '🍨', 'Ice Cream', 'Other Ingredients', 3, 33, ['ice cream'], '#f2d4cf'),
   ingredient('orange-juice', '🧃', 'Orange Juice', 'Other Ingredients', 3, 28, ['orange juice'], '#eb982d'),
   ingredient('chocolate', '🍫', 'Chocolate', 'Other Ingredients', 3, 30, ['chocolate'], '#6b3d2c'),
   ingredient('ginger', '🫚', 'Ginger', 'Other Ingredients', 3, 17, ['ginger'], '#c4a15d'),
 ];
 
+function pantryIngredient(
+  id: string,
+  emoji: string,
+  name: string,
+  category: IngredientCategory,
+  aliases: string[] = [],
+): Ingredient {
+  return {
+    id, emoji, name, category,
+    usesPerUnit: 'infinite', priceSek: 0,
+    aliases: [name.toLowerCase(), ...aliases],
+    isPantry: true, color: '#88a77b',
+  };
+}
+
+// Display metadata for the same 30-item whitelist in backend/app/data/pantry.py.
+// The backend contract test checks that these IDs stay aligned.
+export const pantryIngredients: Ingredient[] = [
+  pantryIngredient('salt', '🧂', 'Salt', 'Essential Seasonings & Oils'),
+  pantryIngredient('black-pepper', '🌶️', 'Black Pepper', 'Essential Seasonings & Oils', ['pepper']),
+  pantryIngredient('olive-oil', '🫒', 'Olive Oil', 'Essential Seasonings & Oils', ['extra virgin olive oil']),
+  pantryIngredient('vegetable-oil', '🛢️', 'Vegetable Oil', 'Essential Seasonings & Oils', ['oil']),
+  pantryIngredient('water', '💧', 'Water', 'Essential Seasonings & Oils'),
+  pantryIngredient('vinegar', '🍶', 'Vinegar', 'Essential Seasonings & Oils'),
+  pantryIngredient('soy-sauce', '🍶', 'Soy Sauce', 'Essential Seasonings & Oils'),
+  pantryIngredient('mustard', '🌭', 'Mustard', 'Essential Seasonings & Oils'),
+  pantryIngredient('ketchup', '🍅', 'Ketchup', 'Essential Seasonings & Oils'),
+  pantryIngredient('chilli-sauce', '🌶️', 'Chilli Sauce', 'Essential Seasonings & Oils'),
+  pantryIngredient('basil', '🌿', 'Basil', 'Herbs & Spices', ['basil leaves']),
+  pantryIngredient('parsley', '🌱', 'Parsley', 'Herbs & Spices'),
+  pantryIngredient('oregano', '☘️', 'Oregano', 'Herbs & Spices'),
+  pantryIngredient('thyme', '🌿', 'Thyme', 'Herbs & Spices'),
+  pantryIngredient('cinnamon', '🥮', 'Cinnamon', 'Herbs & Spices'),
+  pantryIngredient('cumin', '🟤', 'Cumin', 'Herbs & Spices'),
+  pantryIngredient('paprika', '🌶️', 'Paprika', 'Herbs & Spices'),
+  pantryIngredient('chilli-flakes', '🌶️', 'Chilli Flakes', 'Herbs & Spices', ['red pepper flakes']),
+  pantryIngredient('curry-powder', '🍛', 'Curry Powder', 'Herbs & Spices'),
+  pantryIngredient('turmeric', '🟡', 'Turmeric', 'Herbs & Spices'),
+  pantryIngredient('ground-coriander', '🌿', 'Ground Coriander', 'Herbs & Spices'),
+  pantryIngredient('bay-leaves', '🍃', 'Bay Leaves', 'Herbs & Spices', ['bay leaf']),
+  pantryIngredient('garlic-granules', '🧄', 'Garlic Granules', 'Herbs & Spices'),
+  pantryIngredient('italian-seasoning', '🌿', 'Italian Seasoning', 'Herbs & Spices'),
+  pantryIngredient('baking-powder', '🧁', 'Baking Powder', 'Baking & Cooking Essentials'),
+  pantryIngredient('baking-soda', '🥄', 'Baking Soda', 'Baking & Cooking Essentials'),
+  pantryIngredient('vanilla-extract', '🌼', 'Vanilla Extract', 'Baking & Cooking Essentials'),
+  pantryIngredient('cornstarch', '🌽', 'Cornstarch', 'Baking & Cooking Essentials', ['cornflour']),
+  pantryIngredient('chicken-stock', '🐔', 'Chicken Stock', 'Baking & Cooking Essentials'),
+  pantryIngredient('vegetable-stock-cube', '🥬', 'Vegetable Stock Cube', 'Baking & Cooking Essentials'),
+];
+
+export const allIngredients: Ingredient[] = [...storeIngredients, ...pantryIngredients];
+
+const requirement = (ingredientId: string, amount = 1) => ({ ingredientId, amount });
+
+// Demo recipes and instructions are intentionally frontend-owned for this phase.
+// TODO(BACKEND): Fetch recipes, requirements and cooking steps from recipe endpoints.
+export const dummyRecipes: Recipe[] = [
+  {
+    id: 'herb-broth', name: 'Herb Broth', emoji: '🥣', category: 'Soup', accent: '#79a784',
+    requirements: [requirement('water'), requirement('vegetable-stock-cube'), requirement('thyme'), requirement('black-pepper')],
+    steps: [
+      'Bring a small pot of water to a gentle simmer.',
+      'Stir in the vegetable stock cube until it dissolves.',
+      'Add thyme and black pepper, then simmer for five minutes.',
+      'Taste, adjust the seasoning and serve warm.',
+    ],
+  },
+  {
+    id: 'herb-oil-dip', name: 'Herb Oil Dip', emoji: '🫒', category: 'Quick bites', accent: '#8eae6c',
+    requirements: [requirement('olive-oil'), requirement('oregano'), requirement('garlic-granules'), requirement('salt')],
+    steps: [
+      'Pour olive oil into a small serving bowl.',
+      'Stir in oregano, garlic granules and a pinch of salt.',
+      'Let the herbs infuse for a few minutes, then serve.',
+    ],
+  },
+  {
+    id: 'tomato-toast', name: 'Tomato Toast', emoji: '🍅', category: 'Quick bites', accent: '#df7653',
+    requirements: [requirement('bread'), requirement('tomato'), requirement('olive-oil'), requirement('salt')],
+    steps: [
+      'Toast the bread until golden and crisp.',
+      'Slice the tomato and arrange it over the toast.',
+      'Drizzle with olive oil, sprinkle with salt and serve.',
+    ],
+  },
+  {
+    id: 'cheese-omelette', name: 'Cheese Omelette', emoji: '🍳', category: 'Breakfast', accent: '#e3b853',
+    requirements: [requirement('egg'), requirement('cheese'), requirement('butter'), requirement('salt')],
+    steps: [
+      'Whisk the egg with a pinch of salt.',
+      'Melt butter in a pan over medium heat and pour in the egg.',
+      'Scatter cheese over the egg, fold the omelette and cook until set.',
+    ],
+  },
+  {
+    id: 'spaghetti-arrabbiata', name: 'Spaghetti Arrabbiata', emoji: '🍝', category: 'Pasta', accent: '#d15e45',
+    requirements: [requirement('spaghetti'), requirement('canned-tomatoes'), requirement('garlic'), requirement('chilli'), requirement('olive-oil')],
+    steps: [
+      'Boil the spaghetti in salted water until tender.',
+      'Warm olive oil in a pan and gently cook the garlic and chilli.',
+      'Add canned tomatoes and simmer into a sauce.',
+      'Toss the spaghetti through the sauce and serve.',
+    ],
+  },
+  {
+    id: 'egg-fried-rice', name: 'Egg Fried Rice', emoji: '🍚', category: 'Rice', accent: '#d7a951',
+    requirements: [requirement('rice'), requirement('egg'), requirement('spring-onion'), requirement('soy-sauce')],
+    steps: [
+      'Cook the rice and let it cool slightly.',
+      'Scramble the egg in a hot pan.',
+      'Add rice and chopped spring onion, then stir-fry.',
+      'Season with soy sauce and serve hot.',
+    ],
+  },
+  {
+    id: 'chicken-rice', name: 'Chicken Rice', emoji: '🍗', category: 'Dinner', accent: '#ce8d64',
+    requirements: [requirement('chicken-breast'), requirement('rice'), requirement('garlic'), requirement('olive-oil')],
+    steps: [
+      'Cook the rice according to the packet instructions.',
+      'Slice the chicken and season it.',
+      'Heat olive oil and cook the garlic and chicken until fully cooked.',
+      'Serve the chicken over the rice.',
+    ],
+  },
+];

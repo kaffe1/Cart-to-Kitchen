@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useParams } from 'react-router-dom';
 import { AuthPage } from '@/features/auth/view/AuthPage';
 import { CookPage } from '@/features/cooking/view/CookPage';
+import { CookingFinishedPage } from '@/features/cooking/view/CookingFinishedPage';
 import { KitchenPage } from '@/features/kitchen/view/KitchenPage';
 import { ProfilePage } from '@/features/profile/view/ProfilePage';
 import { RecipeDetailPage } from '@/features/recipes/view/RecipeDetailPage';
@@ -24,7 +25,12 @@ function RecipeRoute() {
 
 function CookRoute() {
   const { recipeId = '' } = useParams();
-  return <CookPage recipeId={recipeId} />;
+  return <CookPage key={recipeId} recipeId={recipeId} />;
+}
+
+function CookingFinishedRoute() {
+  const { historyId = '' } = useParams();
+  return <CookingFinishedPage key={historyId} historyId={historyId} />;
 }
 
 function ApplicationLayout() {
@@ -58,6 +64,7 @@ export function AppRouter() {
           )}
           <Route path="/recipes/:recipeId" element={<RecipeRoute />} />
           <Route path="/cook/:recipeId" element={<CookRoute />} />
+          <Route path="/cooking-finished/:historyId" element={<CookingFinishedRoute />} />
         </Route>
         <Route path="*" element={<Navigate to={appRoutes.store} replace />} />
       </Routes>

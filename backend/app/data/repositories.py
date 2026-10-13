@@ -9,10 +9,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..errors import Conflict, NotFound
+from .pantry import SUPPORTED_IDS
 from .models import (
     Avatar,
     CartItem,
     CookHistory,
+    CookRequest,
     Ingredient,
     InventoryItem,
     ShoppingSession,
@@ -52,17 +54,17 @@ class IngredientRepository:
         self.session = session
 
     def all(self) -> list[Ingredient]:
-        return list(self.session.scalars(select(Ingredient).order_by(Ingredient.name)))
+        return list(self.session.scalars(select(Ingredient).where(Ingredient.id.in_(SUPPORTED_IDS)).order_by(Ingredient.name)))
 
     def by_id(self, ingredient_id: str) -> Ingredient:
         row = self.session.get(Ingredient, ingredient_id)
-        if row is None:
+        if row is None or ingredient_id not in SUPPORTED_IDS:
             raise NotFound(f"unknown ingredient: {ingredient_id}")
         return row
 
     def by_ids(self, ingredient_ids: list[str]) -> dict[str, Ingredient]:
         rows = self.session.scalars(
-            select(Ingredient).where(Ingredient.id.in_(ingredient_ids))
+            select(Ingredient).where(Ingredient.id.in_(set(ingredient_ids) & SUPPORTED_IDS))
         )
         return {row.id: row for row in rows}
 
@@ -72,6 +74,16 @@ class ShoppingRepository:
 
     def __init__(self, session: Session) -> None:
         self.session = session
+
+    def lock_user(self, user_id: int) -> None:
+        self.session.execute(select(User).where(User.id == user_id).with_for_update())
+
+    def cooked_request(self, user_id: int, key: str) -> CookHistory | None:
+        request = self.session.get(CookRequest, (user_id, key))
+        return self.history_entry(user_id, request.history_id) if request else None
+
+    def record_cook_request(self, user_id: int, key: str, history_id: int) -> None:
+        self.session.add(CookRequest(user_id=user_id, request_key=key, history_id=history_id))
 
     def active_session(self, user_id: int) -> ShoppingSession | None:
         return self.session.scalar(

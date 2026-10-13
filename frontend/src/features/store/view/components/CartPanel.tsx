@@ -3,37 +3,34 @@ import {
   Plus,
   ReceiptText,
   ShoppingBasket,
-  StickyNote,
 } from 'lucide-react';
-import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { Progress } from '@/shared/components/ui/progress';
 import { formatSek } from '@/shared/utils/format';
 import type {
   CartLine,
   Ingredient,
-  ShoppingListItem,
   Wallet,
 } from '../../model/store.types';
 
 interface CartPanelProps {
   cart: CartLine[];
   ingredients: Ingredient[];
-  shoppingList: ShoppingListItem[];
   wallet: Wallet;
   total: number;
   isCheckingOut: boolean;
-  onQuantityChange: (ingredientId: string, quantity: number) => void;
+  isUpdatingCart: boolean;
+  onQuantityChange: (ingredientId: string, delta: number) => void;
   onCheckout: () => void;
 }
 
 export function CartPanel({
   cart,
   ingredients,
-  shoppingList,
   wallet,
   total,
   isCheckingOut,
+  isUpdatingCart,
   onQuantityChange,
   onCheckout,
 }: CartPanelProps) {
@@ -69,18 +66,6 @@ export function CartPanel({
         </p>
       </div>
 
-      {shoppingList.length > 0 && (
-        <div className="shopping-note">
-          <StickyNote size={17} />
-          <div>
-            <strong>Kitchen note</strong>
-            <p>
-              {shoppingList.length} missing ingredient(s) are waiting below.
-            </p>
-          </div>
-        </div>
-      )}
-
       <section className="cart-lines" aria-label="Cart items">
         {cart.length === 0 ? (
           <div className="empty-mini">
@@ -113,7 +98,8 @@ export function CartPanel({
                 >
                   <button
                     type="button"
-                    onClick={() => onQuantityChange(item.id, line.quantity - 1)}
+                    onClick={() => onQuantityChange(item.id, -1)}
+                    disabled={isCheckingOut || isUpdatingCart}
                     aria-label={`Remove one ${item.name}`}
                   >
                     <Minus size={14} />
@@ -121,7 +107,10 @@ export function CartPanel({
                   <span>{line.quantity}</span>
                   <button
                     type="button"
-                    onClick={() => onQuantityChange(item.id, line.quantity + 1)}
+                    onClick={() => onQuantityChange(item.id, 1)}
+                    disabled={
+                      isCheckingOut || isUpdatingCart || line.quantity >= 9
+                    }
                     aria-label={`Add one ${item.name}`}
                   >
                     <Plus size={14} />
@@ -131,30 +120,22 @@ export function CartPanel({
             );
           })
         )}
-        {shoppingList.length > 0 && (
-          <div className="note-items">
-            {shoppingList.map((entry) => {
-              const item = ingredients.find(
-                (ingredient) => ingredient.id === entry.ingredientId,
-              );
-              return item ? (
-                <Badge key={entry.ingredientId} variant="outline">
-                  {item.emoji} {item.name}
-                </Badge>
-              ) : null;
-            })}
-          </div>
-        )}
       </section>
 
       <Button
         className="cart-checkout w-full"
         size="lg"
         onClick={onCheckout}
-        disabled={cart.length === 0 || remaining < 0 || isCheckingOut}
+        disabled={
+          cart.length === 0 || remaining < 0 || isCheckingOut || isUpdatingCart
+        }
       >
         <ReceiptText size={18} />{' '}
-        {isCheckingOut ? 'Checking out…' : `Checkout · ${formatSek(total)}`}
+        {isCheckingOut
+          ? 'Checking out…'
+          : isUpdatingCart
+            ? 'Updating cart…'
+            : `Checkout · ${formatSek(total)}`}
       </Button>
     </aside>
   );

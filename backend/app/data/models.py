@@ -111,6 +111,14 @@ class CookHistory(Base):
     review_image_type: Mapped[str | None] = mapped_column(Text)
 
 
+class CookRequest(Base):
+    """Persist completion keys so retries cannot consume inventory twice."""
+    __tablename__ = "cook_requests"
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    request_key: Mapped[str] = mapped_column(Text, primary_key=True)
+    history_id: Mapped[int] = mapped_column(ForeignKey("cook_history.id"))
+
+
 class Avatar(Base):
     """At most one normalised PNG/JPEG image per user."""
 

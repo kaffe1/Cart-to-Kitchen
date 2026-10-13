@@ -220,7 +220,7 @@ test('compact price labels fit every slot, with space for long product names', (
       );
     }
   assert.ok(
-    getPriceLabelWidth('Chicken Breast', 0.84) >
+    getPriceLabelWidth('Chicken', 0.84) >
       getPriceLabelWidth('Beef', 0.84),
   );
 });
