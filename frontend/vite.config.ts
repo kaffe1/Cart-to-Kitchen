@@ -1,24 +1,14 @@
-import tailwindcss from '@tailwindcss/postcss';
-import react from '@vitejs/plugin-react';
-import path from 'node:path';
-import { defineConfig } from 'vite';
+import tailwindcss from "@tailwindcss/postcss";
+import react from "@vitejs/plugin-react";
+import path from "node:path";
+import { defineConfig } from "vite";
 export default defineConfig({
   css: { postcss: { plugins: [tailwindcss()] } },
   plugins: [react()],
-  server: { proxy: { '/api/v1': 'http://127.0.0.1:8000' } },
+  server: { proxy: { "/api/v1": "http://127.0.0.1:8000" } },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-
-
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
+      "@": path.resolve(__dirname, "./src"),
     },
   },
 });
