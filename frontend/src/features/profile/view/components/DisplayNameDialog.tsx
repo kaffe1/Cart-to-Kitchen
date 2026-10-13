@@ -13,7 +13,7 @@ import { useState } from "react";
 type DisplayNameDialogProps = {
   open: boolean;
   currentDisplayName: string;
-  onSave: (newDisplayName: string) => void;
+  onSave: (newDisplayName: string) => Promise<void>;
   onClose: () => void;
 };
 
@@ -24,8 +24,21 @@ export function DisplayNameDialog({
   onClose,
 }: DisplayNameDialogProps) {
   const [newDisplayName, setNewDisplayName] = useState(currentDisplayName);
-  const handleSave = () => {
-    onSave(newDisplayName);
+const [error, setError] = useState<string | null>(null);
+const [isSaving, setIsSaving] = useState(false);
+  const trimmed = newDisplayName.trim();
+  const saveAllowed = trimmed.length > 0 && trimmed !== currentDisplayName && !isSaving;
+  
+  const handleSave = async () => {
+    setError(null);
+    setIsSaving(true);
+    try {
+      await onSave(trimmed);
+    } catch {
+      setError("Failed to change display name");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -45,10 +58,13 @@ export function DisplayNameDialog({
           value={newDisplayName}
           onChange={(e) => setNewDisplayName(e.target.value)}
         />
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
         <DialogFooter>
           <DialogClose className="border px-4 py-2">Cancel</DialogClose>
-          <Button onClick={handleSave}>Save</Button>
+          <Button onClick={handleSave} disabled={!saveAllowed}>
+            Save
+          </Button>
         </DialogFooter>
       </DialogPopup>
     </Dialog>

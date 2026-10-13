@@ -13,7 +13,7 @@ import { useState } from "react";
 type EmailDialogProps = {
   open: boolean;
   currentEmail: string;
-  onSave: (newEmail: string) => void;
+  onSave: (newEmail: string) => Promise<void>;
   onClose: () => void;
 };
 
@@ -24,9 +24,26 @@ export function EmailDialog({
   onClose,
 }: EmailDialogProps) {
   const [newEmail, setNewEmail] = useState(currentEmail);
-  const handleSaveCB = () => {
-    onSave(newEmail);
+  const [error, setError] = useState<string | null>(null);
+const [isSaving, setIsSaving] = useState(false);
+
+const trimmed = newEmail.trim();
+const saveAllowed = trimmed.length > 0 && trimmed !== currentEmail && !isSaving;
+
+  const handleSaveCB = async () => {
+    setIsSaving(true);
+    setError(null);
+    try {
+      await onSave(newEmail);
+    } catch (err) {
+      //const isTakenError = err instanceof APIError && (err.code === "conflict" || err.code === "rule_validation")
+      //setError(isTakenError ? "Email is already taken." : "Failed to update email.");
+      setError("temporary error message");
+    } finally {
+      setIsSaving(false);
+    }
   };
+
   return (
     <Dialog
       open={open}
@@ -44,10 +61,13 @@ export function EmailDialog({
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
         />
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
         <DialogFooter>
           <DialogClose className="border px-4 py-2">Cancel</DialogClose>
-          <Button onClick={handleSaveCB}>Save</Button>
+          <Button onClick={handleSaveCB} disabled={!saveAllowed}>
+            Save
+          </Button>
         </DialogFooter>
       </DialogPopup>
     </Dialog>

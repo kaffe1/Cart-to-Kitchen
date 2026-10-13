@@ -6,13 +6,14 @@ export interface ProfilePlaceholder {
   cookingHistory: CookedRecipe[];
 }
 
-/* export type Profile = {
+ export type Profile = {
   displayName: string;
-  email: string;
-  avatar: Avatar;
+  email: string | null;
+  mode: "account" | "guest";
+  avatarUrl?: string | null;
   cookingHistory: CookedRecipe[];
 } 
-*/
+
 
 export type CookedRecipe = {
   recipeId: string;

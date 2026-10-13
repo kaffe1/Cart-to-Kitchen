@@ -48,7 +48,7 @@ async def set_avatar(
 @router.get("/me/avatar")
 def get_avatar(db: Session = Depends(get_db), user=Depends(get_current_user)):
     data, media_type = profile_service.avatar_image(db, user)
-    return Response(content=data, media_type=media_type)
+    return Response(content=data, media_type=media_type, headers={"Cache-Control": "no-cache"})
 
 
 @router.get("/history")
@@ -76,4 +76,4 @@ def review_image(
     user=Depends(get_current_user),
 ):
     data, media_type = profile_service.review_image(db, user, entry_id)
-    return Response(content=data, media_type=media_type)
+    return Response(content=data, media_type=media_type, headers={"Cache-Control": "no-cache"})

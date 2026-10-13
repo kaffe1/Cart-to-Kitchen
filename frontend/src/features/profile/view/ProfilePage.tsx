@@ -13,6 +13,7 @@ export function ProfilePage() {
   const navigate = useNavigate();
   const {
     profile,
+    testProfile,
     isGuestUser,
     isDisplayNameDialogOpen,
     openDisplayNameDialog,
@@ -32,6 +33,10 @@ export function ProfilePage() {
     handleAvatarSave,
   } = useProfilePresenter();
 
+  if (!profile) {
+  return <p>Loading profile...</p>;
+}
+
   if (isGuestUser) {
     return (
       <section className="page-shell placeholder-page">
@@ -40,7 +45,7 @@ export function ProfilePage() {
         <Button onClick={() => navigate(appRoutes.login)}> Sign In</Button>
         <Button
           variant="secondary"
-          onClick={() => navigate(appRoutes.register)}
+          onClick={() => navigate(appRoutes.register)} // TODO: Send to presenter or keep here?
         >
           Sign Up
         </Button>
@@ -62,7 +67,7 @@ export function ProfilePage() {
         />
 
         <div className="flex flex-row m-6">
-          <HistoryPanel cookedRecipes={profile.cookingHistory} />
+          <HistoryPanel cookedRecipes={testProfile.cookingHistory} />
         </div>
       </div>
 
