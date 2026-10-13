@@ -10,3 +10,4 @@ __pycache__/
 
 # architecture documentation belongs in the repo (root gitignore hides docs/)
 !docs/
+.DS_Store

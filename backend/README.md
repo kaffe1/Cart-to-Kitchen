@@ -65,8 +65,8 @@ python -m scripts.mealdb_coverage
 ```
 
 This cross-checks first-letter searches with all public category lists and uses
-an isolated in-memory catalogue. See [the coverage snapshot](../MEALDB_COVERAGE.md)
-for the measured count, assumptions and fully supported dishes.
+an isolated in-memory catalogue; it prints the measured count, assumptions and
+fully supported dishes.
 
 To measure the production Tier 1/Tier 2 whitelist and the audit-only Tier 3
 game adaptations:
@@ -76,8 +76,8 @@ python -m scripts.relaxed_coverage --summary
 ```
 
 Tier 1 and Tier 2 are used by recipe detail, discovery, matching and cooking.
-Tier 3 remains audit-only. The assumptions and their limits are documented in
-[the relaxed coverage report](../MEALDB_RELAXED_COVERAGE.md).
+Tier 3 remains audit-only; the assumptions and their limits are printed by the
+script itself.
 
 ## Architecture
 
