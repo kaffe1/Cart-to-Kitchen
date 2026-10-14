@@ -24,12 +24,10 @@ export function useProfilePresenter() {
     getProfile()
       .then(setProfile)
       .catch((error: unknown) => {
-        if (
+        const isSessionError =
           error instanceof ApiError &&
-          (error.code === "auth_required" || error.code === "invalid_session")
-        ) {
-          setLoadError("You must be signed in to view your profile.");
-        } else {
+          (error.code === "invalid_session" || error.code === "auth_required");
+        if (!isSessionError) {
           setLoadError("Could not load your profile.");
         }
       })

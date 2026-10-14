@@ -9,6 +9,8 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { useState } from "react";
+import { messageForApiError } from "@/shared/api/errorMessage";
+import { validatePassword } from "../../model/profile.validation";
 
 type PasswordDialogProps = {
   open: boolean;
@@ -28,9 +30,14 @@ export function PasswordDialog({ open, onClose, onSave }: PasswordDialogProps) {
     setIsSaving(true);
     try {
       await onSave(currentPassword, newPassword);
-    } catch {
-      setError("Failed to change password");
-      // TODO: APIError?
+    } catch (err) {
+      setError(
+        messageForApiError(
+          err,
+          { invalid_credentials: "Your current password is incorrect." },
+          "Failed to change password.",
+        ),
+      );
     } finally {
       setIsSaving(false);
     }
@@ -38,10 +45,13 @@ export function PasswordDialog({ open, onClose, onSave }: PasswordDialogProps) {
 
   const passwordsMatch = newPassword === confirmPassword;
   const passwordsMismatch = !passwordsMatch && confirmPassword.length > 0;
+  const passwordValidationError =
+    newPassword.length > 0 ? validatePassword(newPassword) : null;
   const saveAllowed =
     currentPassword.length > 0 &&
     newPassword.length > 0 &&
     passwordsMatch &&
+    !passwordValidationError &&
     !isSaving;
 
   return (
@@ -62,7 +72,9 @@ export function PasswordDialog({ open, onClose, onSave }: PasswordDialogProps) {
             placeholder="Enter current password"
             autoComplete="current-password"
             value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
+            onChange={(e) => {
+              (setCurrentPassword(e.target.value), setError(null));
+            }}
           />
           <Input
             type="password"
@@ -82,6 +94,11 @@ export function PasswordDialog({ open, onClose, onSave }: PasswordDialogProps) {
             <p className="text-sm text-destructive">Passwords do not match.</p>
           )}
           {error && <p className="text-sm text-destructive">{error}</p>}
+          {passwordValidationError && (
+            <p className="text-sm text-destructive">
+              {passwordValidationError}
+            </p>
+          )}
         </div>
 
         <DialogFooter>

@@ -9,6 +9,7 @@ import {
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { validateImageFile } from "../../model/profile.validation";
+import { messageForApiError } from "@/shared/api/errorMessage";
 
 type AvatarDialogProps = {
   open: boolean;
@@ -56,8 +57,8 @@ export function AvatarDialog({
     setIsSaving(true);
     try {
       await onSave(selectedFile);
-    } catch {
-      setError("Failed to upload image.");
+    } catch (err) {
+      setError(messageForApiError(err, { rule_validation: "The image is invalid." }, "Failed to upload image."));
     } finally {
       setIsSaving(false);
     }
