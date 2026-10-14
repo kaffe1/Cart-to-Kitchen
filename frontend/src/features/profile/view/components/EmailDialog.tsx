@@ -9,7 +9,8 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { useState } from "react";
-import { ApiError } from "@/shared/api/apiError";
+import { messageForApiError } from "@/shared/api/errorMessage";
+import { validateEmail } from "../../model/profile.validation";
 
 type EmailDialogProps = {
   open: boolean;
@@ -29,20 +30,28 @@ export function EmailDialog({
   const [isSaving, setIsSaving] = useState(false);
 
   const trimmed = newEmail.trim();
+  const wrongEmailFormat = trimmed.length > 0 ? validateEmail(trimmed) : false;
   const saveAllowed =
-    trimmed.length > 0 && trimmed !== currentEmail && !isSaving;
+    trimmed.length > 0 &&
+    !wrongEmailFormat &&
+    trimmed !== currentEmail &&
+    !isSaving;
 
   const handleSaveCB = async () => {
     setIsSaving(true);
     setError(null);
     try {
-      await onSave(newEmail);
+      await onSave(trimmed);
     } catch (err) {
-      const isTakenError =
-        err instanceof ApiError &&
-        (err.code === "conflict" || err.code === "rule_validation");
       setError(
-        isTakenError ? "Email is already taken." : "Failed to update email.",
+        messageForApiError(
+          err,
+          {
+            conflict: "The email address is already taken.",
+            rule_validation: "The email address is already taken.",
+          },
+          "Failed to change email.",
+        ),
       );
     } finally {
       setIsSaving(false);
@@ -67,6 +76,9 @@ export function EmailDialog({
           onChange={(e) => setNewEmail(e.target.value)}
         />
         {error && <p className="text-sm text-destructive">{error}</p>}
+        {wrongEmailFormat && (
+          <p className="text-sm text-destructive">{wrongEmailFormat}</p>
+        )}
 
         <DialogFooter>
           <DialogClose className="border px-4 py-2">Cancel</DialogClose>
