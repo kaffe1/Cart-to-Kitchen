@@ -45,7 +45,9 @@ const toProfile = (me: MeDto): Profile => ({
   displayName: me.displayName,
   email: me.email,
   mode: me.mode,
-  avatarUrl: me.avatarUrl ?? null,
+  avatarUrl: me.avatarUrl
+    ? `${me.avatarUrl}${me.avatarUrl.includes("?") ? "&" : "?"}v=${Date.now()}`
+    : null,
   cookingHistory: [], // TODO: Fetch cooking history from backend when frontend is more ready
 });
 
@@ -67,6 +69,17 @@ export const updateAvatar = (file: File) => {
   const formData = new FormData();
   formData.append("image", file);
   return req<MeDto>("/me/avatar", { method: "PUT", body: formData });
+};
+
+export const updateCookingReview = async (
+  historyId: number,
+  text: string,
+  image?: File,
+) => {
+  void historyId;
+  void text;
+  void image;
+  // TODO(BACKEND): Connect review updates to the profile history endpoint.
 };
 
 export const updateEmail = async (newEmail: string): Promise<void> => {
