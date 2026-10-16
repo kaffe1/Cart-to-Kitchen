@@ -7,7 +7,6 @@ import {
   DialogClose,
   DialogDescription,
 } from "@/shared/components/ui/dialog";
-import { Button } from "@/shared/components/ui/button";
 
 type ReviewDialogProps = {
   open: boolean;

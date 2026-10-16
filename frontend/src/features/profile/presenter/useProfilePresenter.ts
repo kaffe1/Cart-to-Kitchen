@@ -15,7 +15,7 @@ export function useProfilePresenter() {
   const [isEmailDialogOpen, setEmailDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [isAvatarDialogOpen, setAvatarDialogOpen] = useState(false);
-  const [testProfile, setTestProfile] = useState(getProfilePlaceholder); // only for testing
+  const [testProfile] = useState(getProfilePlaceholder); // only for testing
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -102,6 +102,17 @@ export function useProfilePresenter() {
     closeAvatarDialog();
   };
 
+  const handleReviewSave = async (
+    recipeId: string,
+    text: string,
+    image?: File,
+  ) => {
+    void recipeId;
+    void text;
+    void image;
+    // TODO(BACKEND): Connect review saving and update the matching history entry.
+  };
+
   return {
     profile,
     testProfile,
@@ -122,6 +133,7 @@ export function useProfilePresenter() {
     handleEmailSave,
     handlePasswordSave,
     handleAvatarSave,
+    handleReviewSave,
     isLoading,
     loadError,
   };

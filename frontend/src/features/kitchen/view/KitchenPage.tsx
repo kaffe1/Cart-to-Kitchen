@@ -254,11 +254,9 @@ export function KitchenPage() {
         <div ref={resultsRef} className="kitchen-results">
           <RecipeMatchBoard
             matches={presenter.matches}
-            favorites={presenter.favorites}
             ingredients={presenter.ingredients}
             disabled={presenter.isWriting || presenter.isMatching}
             onCompleteCounter={presenter.completeCounter}
-            onToggleFavorite={presenter.toggleFavorite}
           />
         </div>
       )}

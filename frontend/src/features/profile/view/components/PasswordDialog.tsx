@@ -61,22 +61,25 @@ export function PasswordDialog({ open, onClose, onSave }: PasswordDialogProps) {
         if (!nextOpen) onClose();
       }}
     >
-      <DialogPopup>
-        <DialogHeader>
-          <DialogTitle>Change password</DialogTitle>
+      <DialogPopup className="profile-edit-dialog">
+        <DialogHeader className="profile-dialog-header">
+          <DialogTitle className="profile-dialog-title">Change password</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 profile-dialog-fields">
           <Input
+            className="profile-dialog-input"
             type="password"
             placeholder="Enter current password"
             autoComplete="current-password"
             value={currentPassword}
             onChange={(e) => {
-              (setCurrentPassword(e.target.value), setError(null));
+              setCurrentPassword(e.target.value);
+              setError(null);
             }}
           />
           <Input
+            className="profile-dialog-input"
             type="password"
             placeholder="Enter new password"
             autoComplete="new-password"
@@ -84,6 +87,7 @@ export function PasswordDialog({ open, onClose, onSave }: PasswordDialogProps) {
             onChange={(e) => setNewPassword(e.target.value)}
           />
           <Input
+            className="profile-dialog-input"
             type="password"
             placeholder="Confirm new password"
             autoComplete="new-password"
@@ -101,9 +105,9 @@ export function PasswordDialog({ open, onClose, onSave }: PasswordDialogProps) {
           )}
         </div>
 
-        <DialogFooter>
-          <DialogClose className="border px-4 py-2">Cancel</DialogClose>
-          <Button onClick={handleSave} disabled={!saveAllowed}>
+        <DialogFooter className="profile-dialog-footer">
+          <DialogClose className="profile-dialog-cancel">Cancel</DialogClose>
+          <Button className="profile-dialog-save" onClick={handleSave} disabled={!saveAllowed}>
             {isSaving ? "Saving…" : "Save"}
           </Button>
         </DialogFooter>
