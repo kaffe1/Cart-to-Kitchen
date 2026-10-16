@@ -8,7 +8,10 @@ import {
 } from "@/shared/components/ui/dialog";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Button } from "@/shared/components/ui/button";
-import { validateImageFile } from "../../model/profile.validation";
+import {
+  IMAGE_ACCEPT,
+  validateImageFile,
+} from "../../model/profile.validation";
 import { messageForApiError } from "@/shared/api/errorMessage";
 
 type AvatarDialogProps = {
@@ -38,6 +41,7 @@ export function AvatarDialog({
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const chosenFile = event.target.files?.[0];
+    event.target.value = "";
     if (!chosenFile) {
       return;
     }
@@ -58,7 +62,16 @@ export function AvatarDialog({
     try {
       await onSave(selectedFile);
     } catch (err) {
-      setError(messageForApiError(err, { rule_validation: "The image is invalid." }, "Failed to upload image."));
+      setError(
+        messageForApiError(
+          err,
+          {
+            rule_validation:
+              "The image needs to be PNG, JPEG or WebP, and smaller than 2 MB.",
+          },
+          "Failed to upload image.",
+        ),
+      );
     } finally {
       setIsSaving(false);
     }
@@ -89,7 +102,7 @@ export function AvatarDialog({
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept={IMAGE_ACCEPT}
             className="hidden"
             onChange={handleFileChange}
           />
@@ -100,7 +113,7 @@ export function AvatarDialog({
           >
             Choose image...
           </Button>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
 
         <DialogFooter>

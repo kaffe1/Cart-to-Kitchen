@@ -1,11 +1,13 @@
-const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+export const IMAGE_ACCEPT = ALLOWED_IMAGE_TYPES.join(",");
 
 export const validateImageFile = (file: File): string | null => {
-  if (!file.type.startsWith("image/")) {
-    return "Please choose an image file.";
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return "Please choose a valid image file (PNG, JPEG, or WebP).";
   }
-  if (file.size > MAX_AVATAR_BYTES) {
-    return "The image must be smaller than 5 MB.";
+  if (file.size > MAX_IMAGE_BYTES) {
+    return "The image must be smaller than 2 MB.";
   }
   return null;
 };
