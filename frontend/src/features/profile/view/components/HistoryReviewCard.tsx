@@ -7,12 +7,7 @@ import {
   Save,
   X,
 } from "lucide-react";
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ChangeEvent,
-} from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import type { CookedRecipe } from "../../model/profile.types";
 import {
   IMAGE_ACCEPT,
@@ -21,12 +16,13 @@ import {
 import { messageForApiError } from "@/shared/api/errorMessage";
 import { Button } from "@/shared/components/ui/button";
 import { formatShortDate } from "@/shared/utils/format";
+import { TextEditor } from "@/shared/components/ui/TextEditor";
 
 type HistoryReviewCardProps = {
   recipe: CookedRecipe & { cookedAt?: string };
   expanded: boolean;
   onToggle: () => void;
-  onSave: (recipeId: string, text: string, image?: File) => Promise<void>;
+  onSave: (entryId: string, text: string, image?: File) => Promise<void>;
 };
 
 export function HistoryReviewCard({
@@ -81,7 +77,7 @@ export function HistoryReviewCard({
     setError(null);
     setIsSaving(true);
     try {
-      await onSave(recipe.recipeId, text, selectedFile ?? undefined);
+      await onSave(recipe.entryId, text, selectedFile ?? undefined);
       setSelectedFile(null);
       setPreviewUrl(null);
       setIsEditing(false);
@@ -90,10 +86,9 @@ export function HistoryReviewCard({
         messageForApiError(
           err,
           {
-            PROFANITY_REJECTED:
-              "Please revise the review before saving it.",
+            PROFANITY_REJECTED: "The review contains words that are not allowed",
             rule_validation:
-              "Check the review text and make sure the image is PNG, JPEG or WebP under 2 MB.",
+              "Check the review text and make sure the image is PNG, JPEG or WebP and under 2 MB.",
           },
           "Could not save your review.",
         ),
@@ -106,7 +101,11 @@ export function HistoryReviewCard({
   const shownImage = previewUrl ?? recipe.reviewImageUrl;
 
   return (
-    <li className={expanded ? "profile-history-row expanded" : "profile-history-row"}>
+    <li
+      className={
+        expanded ? "profile-history-row expanded" : "profile-history-row"
+      }
+    >
       <div className="profile-history-summary">
         <span className="profile-recipe-mark" aria-hidden="true">
           <ChefHat />
@@ -174,13 +173,12 @@ export function HistoryReviewCard({
             <div className="profile-review-copy">
               {isEditing ? (
                 <>
-                  <label htmlFor={`review-${recipe.recipeId}`}>Your review</label>
-                  <textarea
-                    id={`review-${recipe.recipeId}`}
-                    value={draftText}
-                    maxLength={2000}
-                    placeholder="What did you think of this dish?"
-                    onChange={(event) => setDraftText(event.target.value)}
+                  <label htmlFor={`review-${recipe.entryId}`}>
+                    Your review
+                  </label>
+                  <TextEditor
+                    initialHtml={recipe.review ?? ""}
+                    onChange={(_html, plainText) => setDraftText(plainText)}
                   />
                   <small>{draftText.length}/2000</small>
                 </>
