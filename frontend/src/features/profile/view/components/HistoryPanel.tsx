@@ -5,18 +5,11 @@ import { HistoryReviewCard } from "./HistoryReviewCard";
 
 type HistoryPanelProps = {
   cookedRecipes: CookedRecipe[];
-  onReviewSave: (
-    recipeId: string,
-    text: string,
-    image?: File,
-  ) => Promise<void>;
+  onReviewSave: (entryId: string, text: string, image: File | null) => Promise<void>;
 };
 
-export function HistoryPanel({
-  cookedRecipes,
-  onReviewSave,
-}: HistoryPanelProps) {
-  const [activeRecipeId, setActiveRecipeId] = useState<string | null>(null);
+export function HistoryPanel({ cookedRecipes, onReviewSave }: HistoryPanelProps) {
+  const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
 
   return (
     <article className="profile-card profile-history-card">
@@ -42,15 +35,18 @@ export function HistoryPanel({
         <ul className="profile-history-list">
           {cookedRecipes.map((recipe) => (
             <HistoryReviewCard
-              key={recipe.recipeId}
+              key={recipe.entryId}
               recipe={recipe}
-              expanded={activeRecipeId === recipe.recipeId}
+              expanded={activeEntryId === recipe.entryId}
               onToggle={() =>
-                setActiveRecipeId((current) =>
-                  current === recipe.recipeId ? null : recipe.recipeId,
+                setActiveEntryId((current) =>
+                  current === recipe.entryId ? null : recipe.entryId,
                 )
               }
-              onSave={onReviewSave}
+              onSave={async (entryId, text, image) => {
+                await onReviewSave(entryId, text, image); 
+                setActiveEntryId(null); 
+              }}
             />
           ))}
         </ul>

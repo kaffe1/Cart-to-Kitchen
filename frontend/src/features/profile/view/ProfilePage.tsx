@@ -15,7 +15,6 @@ export function ProfilePage() {
   const navigate = useNavigate();
   const {
     profile,
-    testProfile,
     isGuestUser,
     isDisplayNameDialogOpen,
     openDisplayNameDialog,
@@ -116,7 +115,7 @@ export function ProfilePage() {
           onSignOut={() => void handleSignOut()}
         />
         <HistoryPanel
-          cookedRecipes={testProfile.cookingHistory}
+          cookedRecipes={profile.cookingHistory}
           onReviewSave={handleReviewSave}
         />
       </div>

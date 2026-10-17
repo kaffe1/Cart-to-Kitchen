@@ -9,15 +9,16 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
+import { Profile } from "../../model/profile.types";
+
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/shared/components/ui/avatar";
-import { ProfilePlaceholder } from "../../model/profile.types";
 
 type ProfilePanelProps = {
-  profile: ProfilePlaceholder; // ProfilePlaceholder
+  profile: Profile
   onDisplayNameChange: () => void;
   onAvatarChange: () => void;
   onPasswordChange: () => void;

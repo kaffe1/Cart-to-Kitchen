@@ -1,6 +1,7 @@
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 export const IMAGE_ACCEPT = ALLOWED_IMAGE_TYPES.join(",");
+const MAX_REVIEW_LENGTH = 2000;
 
 export const validateImageFile = (file: File): string | null => {
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
@@ -37,5 +38,14 @@ export const validateDisplayName = (displayName: string): string | null => {
   if (displayName.length > 40) {
     return "Display name cannot be longer than 40 characters.";
   }
+  return null;
+};
+
+export const validateReview = (
+  html: string,
+  plainText: string,
+): string | null => {
+  if (plainText.trim().length === 0) return "A review must contain some text";
+  if (html.length > MAX_REVIEW_LENGTH) return "The review needs to be shorter";
   return null;
 };
