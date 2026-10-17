@@ -44,7 +44,7 @@ export function HistoryPanel({ cookedRecipes, onReviewSave }: HistoryPanelProps)
                 )
               }
               onSave={async (entryId, text, image) => {
-                await onReviewSave(entryId, text, image); 
+                await onReviewSave(entryId, text, image ?? null); 
                 setActiveEntryId(null); 
               }}
             />

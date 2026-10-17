@@ -70,17 +70,6 @@ export const updateAvatar = async (file: File): Promise<string | null> => {
   return me.avatarUrl ?? null;
 };
 
-export const updateCookingReview = async (
-  historyId: number,
-  text: string,
-  image?: File,
-) => {
-  void historyId;
-  void text;
-  void image;
-  // TODO(BACKEND): Connect review updates to the profile history endpoint.
-};
-
 export const updateEmail = async (newEmail: string): Promise<void> => {
   await req<MeDto>("/me", {
     method: "PATCH",
