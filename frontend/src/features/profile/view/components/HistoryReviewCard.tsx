@@ -33,6 +33,7 @@ export function HistoryReviewCard({
 }: HistoryReviewCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [draftHtml, setDraftHtml] = useState(recipe.review ?? "");
   const [draftText, setDraftText] = useState(recipe.review ?? "");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -47,6 +48,7 @@ export function HistoryReviewCard({
   );
 
   const resetEditor = () => {
+    setDraftHtml(recipe.review ?? "");
     setDraftText(recipe.review ?? "");
     setSelectedFile(null);
     setPreviewUrl(null);
@@ -69,15 +71,14 @@ export function HistoryReviewCard({
   };
 
   const handleSave = async () => {
-    const text = draftText.trim();
-    if (!text) {
+    if (!draftText.trim()) {
       setError("Write a short review before saving.");
       return;
     }
     setError(null);
     setIsSaving(true);
     try {
-      await onSave(recipe.entryId, text, selectedFile ?? undefined);
+      await onSave(recipe.entryId, draftHtml, selectedFile ?? undefined);
       setSelectedFile(null);
       setPreviewUrl(null);
       setIsEditing(false);
@@ -86,7 +87,8 @@ export function HistoryReviewCard({
         messageForApiError(
           err,
           {
-            PROFANITY_REJECTED: "The review contains words that are not allowed",
+            PROFANITY_REJECTED:
+              "The review contains words that are not allowed",
             rule_validation:
               "Check the review text and make sure the image is PNG, JPEG or WebP and under 2 MB.",
           },
@@ -177,8 +179,11 @@ export function HistoryReviewCard({
                     Your review
                   </label>
                   <TextEditor
-                    initialHtml={recipe.review ?? ""}
-                    onChange={(_html, plainText) => setDraftText(plainText)}
+                    initialHtml={draftHtml}
+                    onChange={(html, plainText) => {
+                      setDraftHtml(html);
+                      setDraftText(plainText);
+                    }}
                   />
                   <small>{draftText.length}/2000</small>
                 </>
