@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { Profile } from "../model/profile.types";
+import type { Profile } from "../model/profile.types";
 import {
   getProfile,
   updateDisplayName,
   updateEmail,
-  getProfilePlaceholder,
   updatePassword,
   updateAvatar,
+  saveReview,
 } from "../model/profile.api";
 import { ApiError } from "@/shared/api/apiError";
 
@@ -15,7 +15,6 @@ export function useProfilePresenter() {
   const [isEmailDialogOpen, setEmailDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [isAvatarDialogOpen, setAvatarDialogOpen] = useState(false);
-  const [testProfile, setTestProfile] = useState(getProfilePlaceholder); // only for testing
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -95,16 +94,24 @@ export function useProfilePresenter() {
   };
 
   const handleAvatarSave = async (file: File) => {
-    const me = await updateAvatar(file);
+    const avatarUrl = await updateAvatar(file);
     patchProfile({
-      avatarUrl: me.avatarUrl ? `${me.avatarUrl}?v=${Date.now()}` : null,
+      avatarUrl: avatarUrl ? `${avatarUrl}?v=${Date.now()}` : null,
     });
     closeAvatarDialog();
   };
 
+  const handleReviewSave = async (entryId: string, text: string, file: File | null) => {
+    const savedReview = await saveReview(entryId, text, file);
+    const updated = savedReview.reviewImageUrl ? {...savedReview, reviewImageUrl: `${savedReview.reviewImageUrl}?v=${Date.now()}`}: savedReview;
+    setProfile((prev) => prev ? {...prev,
+          cookingHistory: prev.cookingHistory.map((recipe) =>
+            recipe.entryId === updated.entryId ? updated : recipe,
+          ),} : prev,);
+  };
+
   return {
     profile,
-    testProfile,
     isGuestUser,
     isDisplayNameDialogOpen,
     openDisplayNameDialog,
@@ -122,6 +129,7 @@ export function useProfilePresenter() {
     handleEmailSave,
     handlePasswordSave,
     handleAvatarSave,
+    handleReviewSave,
     isLoading,
     loadError,
   };

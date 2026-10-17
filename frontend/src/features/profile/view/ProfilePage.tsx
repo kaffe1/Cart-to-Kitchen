@@ -13,7 +13,6 @@ export function ProfilePage() {
   const navigate = useNavigate();
   const {
     profile,
-    testProfile,
     isGuestUser,
     isDisplayNameDialogOpen,
     openDisplayNameDialog,
@@ -31,6 +30,7 @@ export function ProfilePage() {
     handleEmailSave,
     handlePasswordSave,
     handleAvatarSave,
+    handleReviewSave,
     isLoading,
     loadError,
   } = useProfilePresenter();
@@ -68,7 +68,7 @@ export function ProfilePage() {
         />
 
         <div className="flex flex-row m-6">
-          <HistoryPanel cookedRecipes={testProfile.cookingHistory} />
+          <HistoryPanel cookedRecipes={profile.cookingHistory} onReviewSave={handleReviewSave} />
         </div>
       </div>
 

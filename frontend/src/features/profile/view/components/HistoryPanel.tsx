@@ -5,12 +5,13 @@ import { ReviewDialog } from "./ReviewDialog";
 
 type HistoryPanelProps = {
   cookedRecipes: CookedRecipe[];
+  onReviewSave: (entryId: string, text: string, image: File | null) => Promise<void>;
 };
 
-export function HistoryPanel({ cookedRecipes }: HistoryPanelProps) {
-  const [activeRecipeId, setActiveRecipeId] = useState<string | null>(null);
+export function HistoryPanel({ cookedRecipes, onReviewSave }: HistoryPanelProps) {
+  const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
   const activeRecipe = cookedRecipes.find(
-    (recipe) => recipe.recipeId === activeRecipeId,
+    (recipe) => recipe.entryId === activeEntryId,
   );
 
   return (
@@ -23,7 +24,7 @@ export function HistoryPanel({ cookedRecipes }: HistoryPanelProps) {
         <ul className="flex flex-col gap-2 overflow-y-auto max-h-80">
           {cookedRecipes.map((recipe) => (
             <li
-              key={recipe.recipeId}
+              key={recipe.entryId}
               className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2"
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -32,9 +33,9 @@ export function HistoryPanel({ cookedRecipes }: HistoryPanelProps) {
                 </span>
                 <Button
                   variant="link"
-                  onClick={() => setActiveRecipeId(recipe.recipeId)}
+                  onClick={() => setActiveEntryId(recipe.entryId)}
                 >
-                  my review
+                  {recipe.review ? "Edit review" : "Write review"}
                 </Button>
               </div>
             </li>
@@ -44,15 +45,15 @@ export function HistoryPanel({ cookedRecipes }: HistoryPanelProps) {
 
       {activeRecipe && (
         <ReviewDialog
-          open={!!activeRecipe}
-          onClose={() => setActiveRecipeId(null)}
+          open
           recipeName={activeRecipe.name}
+          currentReview={activeRecipe.review ?? ""}
+          currentReviewImageUrl={activeRecipe.reviewImageUrl}
+          onClose={() => setActiveEntryId(null)}
+          onSave={async(text, file) => {await onReviewSave(activeRecipe.entryId, text, file); setActiveEntryId(null);}}
         />
       )}
     </article>
   );
 }
 
-// Scrollable list of cooked recipes
-// Name | My review | Mark as favorite
-// Write review (not first priority)

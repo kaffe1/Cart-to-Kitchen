@@ -1,32 +1,5 @@
-import type { ProfilePlaceholder, Profile } from "./profile.types";
+import type { CookedRecipe, Profile } from "./profile.types";
 import { requestJson as req } from "@/shared/api/httpClient";
-
-const profilePlaceholder: ProfilePlaceholder = {
-  displayName: "Guest cook",
-  email: "guest@example.com",
-  //mode: "guest",
-  mode: "account",
-  avatarUrl: null,
-  cookingHistory: [
-    {
-      recipeId: "1",
-      name: "Spaghetti Bolognese",
-      review: "Delicious and easy to make!",
-      reviewImageUrl: "https://example.com/spaghetti.jpg",
-    },
-    {
-      recipeId: "2",
-      name: "Chicken Curry",
-      review: "A bit too spicy for my taste.",
-      reviewImageUrl: "https://example.com/chicken-curry.jpg",
-    },
-  ],
-};
-
-// TODO(BACKEND): Replace this placeholder with the current-user endpoint.
-export function getProfilePlaceholder(): ProfilePlaceholder {
-  return profilePlaceholder;
-}
 
 type MeDto = {
   id: string;
@@ -41,17 +14,44 @@ type MeResponse = {
   user: MeDto;
 };
 
-const toProfile = (me: MeDto): Profile => ({
+const toProfile = (me: MeDto, history: CookedRecipe[] = []): Profile => ({
   displayName: me.displayName,
   email: me.email,
   mode: me.mode,
   avatarUrl: me.avatarUrl ?? null,
-  cookingHistory: [], // TODO: Fetch cooking history from backend when frontend is more ready
+  cookingHistory: history,
 });
+
+type HistoryDto = {
+  id: number;
+  recipeId: string;
+  name: string;
+  cookedAt: string;
+  review: string | null;
+  reviewImageUrl: string | null;
+};
+
+const toCookedRecipe = (history: HistoryDto): CookedRecipe => ({
+  entryId: String(history.id),
+  recipeId: history.recipeId,
+  name: history.name,
+  cookedAt: history.cookedAt,
+  review: history.review,
+  reviewImageUrl: history.reviewImageUrl,
+});
+
+const newestFirst = (a: CookedRecipe, b: CookedRecipe) =>
+  b.cookedAt.localeCompare(a.cookedAt);
 
 export const getProfile = async (): Promise<Profile> => {
   const resp = await req<MeResponse>("/auth/me");
-  return toProfile(resp.user);
+  const basicProfile = toProfile(resp.user);
+  if (basicProfile.mode === "guest") return basicProfile;
+  const history = await req<HistoryDto[]>("/history");
+  return {
+    ...basicProfile,
+    cookingHistory: history.map(toCookedRecipe).toSorted(newestFirst),
+  };
 };
 
 export const updateDisplayName = async (
@@ -63,10 +63,11 @@ export const updateDisplayName = async (
   });
 };
 
-export const updateAvatar = (file: File) => {
+export const updateAvatar = async (file: File): Promise<string | null> => {
   const formData = new FormData();
   formData.append("image", file);
-  return req<MeDto>("/me/avatar", { method: "PUT", body: formData });
+  const me = await req<MeDto>("/me/avatar", { method: "PUT", body: formData });
+  return me.avatarUrl ?? null;
 };
 
 export const updateEmail = async (newEmail: string): Promise<void> => {
@@ -87,4 +88,19 @@ export const updatePassword = async (
       newPassword: newPassword,
     }),
   });
+};
+
+export const saveReview = async (
+  entryId: string,
+  text: string,
+  image: File | null,
+): Promise<CookedRecipe> => {
+  const formData = new FormData();
+  formData.append("text", text);
+  if (image) formData.append("image", image);
+  const saved = await req<HistoryDto>(`/history/${entryId}/review`, {
+    method: "PUT",
+    body: formData,
+  });
+  return toCookedRecipe(saved);
 };
