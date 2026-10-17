@@ -65,12 +65,13 @@ export function EmailDialog({
         if (!nextOpen) onClose();
       }}
     >
-      <DialogPopup>
-        <DialogHeader>
-          <DialogTitle>Change email</DialogTitle>
+      <DialogPopup className="profile-edit-dialog">
+        <DialogHeader className="profile-dialog-header">
+          <DialogTitle className="profile-dialog-title">Change email</DialogTitle>
         </DialogHeader>
 
         <Input
+          className="profile-dialog-input"
           placeholder="New Email"
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
@@ -80,9 +81,9 @@ export function EmailDialog({
           <p className="text-sm text-destructive">{wrongEmailFormat}</p>
         )}
 
-        <DialogFooter>
-          <DialogClose className="border px-4 py-2">Cancel</DialogClose>
-          <Button onClick={handleSaveCB} disabled={!saveAllowed}>
+        <DialogFooter className="profile-dialog-footer">
+          <DialogClose className="profile-dialog-cancel">Cancel</DialogClose>
+          <Button className="profile-dialog-save" onClick={handleSaveCB} disabled={!saveAllowed}>
             {isSaving ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>

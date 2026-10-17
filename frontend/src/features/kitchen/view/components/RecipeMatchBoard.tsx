@@ -1,6 +1,6 @@
 /* oxlint-disable next/no-img-element -- Vite renders API recipe images with a native img and an onError emoji fallback. */
 import { useState } from 'react';
-import { Check, Heart, ListPlus, ShoppingCart, Sparkles } from 'lucide-react';
+import { Check, ListPlus, ShoppingCart, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { appRoutes } from '@/app/routes';
 import type { Ingredient } from '@/features/store/model/store.types';
@@ -13,11 +13,9 @@ import { firstAvailableMatchTab } from '../../model/kitchen.rules';
 
 interface RecipeMatchBoardProps {
   matches: RecipeMatchGroups;
-  favorites: string[];
   ingredients: Ingredient[];
   disabled: boolean;
   onCompleteCounter: (ingredientIds: string[]) => void;
-  onToggleFavorite: (recipeId: string) => void;
 }
 
 function ingredientNames(ids: string[], ingredients: Ingredient[]) {
@@ -42,18 +40,14 @@ function RecipeArtwork({ recipe }: { recipe: Recipe }) {
 
 function MatchCard({
   match,
-  favorite,
   ingredients,
   disabled,
   onCompleteCounter,
-  onToggleFavorite,
 }: {
   match: RecipeMatch;
-  favorite: boolean;
   ingredients: Ingredient[];
   disabled: boolean;
   onCompleteCounter: (ids: string[]) => void;
-  onToggleFavorite: (recipeId: string) => void;
 }) {
   const ready = match.availability === 'ready_now';
   const almost = match.availability === 'almost_ready';
@@ -64,9 +58,6 @@ function MatchCard({
       <div className="recipe-card-body">
         <div className="recipe-card-title">
           <h3>{match.recipe.name}</h3>
-          <button type="button" disabled={disabled} className={favorite ? 'favorite-button active' : 'favorite-button'} onClick={() => onToggleFavorite(match.recipe.id)} aria-label={`${favorite ? 'Remove' : 'Add'} ${match.recipe.name} ${favorite ? 'from' : 'to'} favorites`}>
-            <Heart size={17} fill={favorite ? 'currentColor' : 'none'} />
-          </button>
         </div>
         <p>{match.matchedCount}/{match.requiredCount} ingredients covered · pantry included</p>
         {almost && <small><Sparkles size={14} /> In kitchen: {ingredientNames(match.missingFromCounter, ingredients)}</small>}
@@ -96,14 +87,12 @@ function MatchList({
 }: {
   items: RecipeMatch[];
   emptyCopy: string;
-  favorites: string[];
   ingredients: Ingredient[];
   disabled: boolean;
   onCompleteCounter: (ingredientIds: string[]) => void;
-  onToggleFavorite: (recipeId: string) => void;
 }) {
   if (!items.length) return <div className="match-empty">{emptyCopy}</div>;
-  return <div className="recipe-match-grid">{items.map((match) => <MatchCard key={match.recipe.id} match={match} favorite={props.favorites.includes(match.recipe.id)} {...props} />)}</div>;
+  return <div className="recipe-match-grid">{items.map((match) => <MatchCard key={match.recipe.id} match={match} {...props} />)}</div>;
 }
 
 export function RecipeMatchBoard(props: RecipeMatchBoardProps) {

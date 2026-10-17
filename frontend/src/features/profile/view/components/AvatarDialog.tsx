@@ -9,6 +9,11 @@ import {
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Button } from "@/shared/components/ui/button";
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/shared/components/ui/avatar";
+import {
   IMAGE_ACCEPT,
   validateImageFile,
 } from "../../model/profile.validation";
@@ -86,18 +91,17 @@ export function AvatarDialog({
         if (!nextOpen) onClose();
       }}
     >
-      <DialogPopup>
-        <DialogHeader>
-          <DialogTitle>Change Avatar</DialogTitle>
+      <DialogPopup className="profile-edit-dialog">
+        <DialogHeader className="profile-dialog-header">
+          <DialogTitle className="profile-dialog-title">Change Avatar</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-4 profile-avatar-dialog-body">
           {shownUrl && (
-            <img
-              src={shownUrl}
-              alt="Avatar preview"
-              className="h-24 w-24 rounded-full object-cover"
-            />
+            <Avatar className="h-24 w-24 profile-dialog-avatar">
+              <AvatarImage src={shownUrl} alt="Avatar preview" />
+              <AvatarFallback>Preview</AvatarFallback>
+            </Avatar>
           )}
           <input
             ref={fileInputRef}
@@ -109,6 +113,7 @@ export function AvatarDialog({
           <Button
             type="button"
             variant="outline"
+            className="profile-avatar-choose"
             onClick={() => fileInputRef.current?.click()}
           >
             Choose image...
@@ -116,9 +121,13 @@ export function AvatarDialog({
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
 
-        <DialogFooter>
-          <DialogClose className="border px-4 py-2">Cancel</DialogClose>
-          <Button onClick={handleSave} disabled={!selectedFile || isSaving}>
+        <DialogFooter className="profile-dialog-footer">
+          <DialogClose className="profile-dialog-cancel">Cancel</DialogClose>
+          <Button
+            className="profile-dialog-save"
+            onClick={handleSave}
+            disabled={!selectedFile || isSaving}
+          >
             {isSaving ? "Uploading…" : "Save"}
           </Button>
         </DialogFooter>

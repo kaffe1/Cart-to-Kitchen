@@ -1,4 +1,3 @@
-import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useParams } from 'react-router-dom';
 import { AuthPage } from '@/features/auth/view/AuthPage';
 import { CookPage } from '@/features/cooking/view/CookPage';
@@ -9,14 +8,6 @@ import { RecipeDetailPage } from '@/features/recipes/view/RecipeDetailPage';
 import { StorePage } from '@/features/store/view/StorePage';
 import { AppShell } from '@/shared/components/layout/AppShell';
 import { appRoutes } from './routes';
-
-const DesignSystemPage = import.meta.env.DEV
-  ? lazy(() =>
-      import('./design-system/DesignSystemPage').then((module) => ({
-        default: module.DesignSystemPage,
-      })),
-    )
-  : null;
 
 function RecipeRoute() {
   const { recipeId = '' } = useParams();
@@ -52,16 +43,6 @@ export function AppRouter() {
           <Route path={appRoutes.store} element={<StorePage />} />
           <Route path={appRoutes.kitchen} element={<KitchenPage />} />
           <Route path={appRoutes.profile} element={<ProfilePage />} />
-          {DesignSystemPage && (
-            <Route
-              path={appRoutes.designSystem}
-              element={
-                <Suspense fallback={<div className="page-shell">Loading design system…</div>}>
-                  <DesignSystemPage />
-                </Suspense>
-              }
-            />
-          )}
           <Route path="/recipes/:recipeId" element={<RecipeRoute />} />
           <Route path="/cook/:recipeId" element={<CookRoute />} />
           <Route path="/cooking-finished/:historyId" element={<CookingFinishedRoute />} />

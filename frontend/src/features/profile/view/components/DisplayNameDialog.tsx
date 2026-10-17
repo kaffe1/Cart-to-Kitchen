@@ -53,12 +53,13 @@ export function DisplayNameDialog({
         if (!nextOpen) onClose();
       }}
     >
-      <DialogPopup>
-        <DialogHeader>
-          <DialogTitle>Change Display Name</DialogTitle>
+      <DialogPopup className="profile-edit-dialog">
+        <DialogHeader className="profile-dialog-header">
+          <DialogTitle className="profile-dialog-title">Change Display Name</DialogTitle>
         </DialogHeader>
 
         <Input
+          className="profile-dialog-input"
           placeholder="New Display Name"
           value={newDisplayName}
           onChange={(e) => setNewDisplayName(e.target.value)}
@@ -68,9 +69,9 @@ export function DisplayNameDialog({
           <p className="text-sm text-destructive">{wrongDisplayNameFormat}</p>
         )}
 
-        <DialogFooter>
-          <DialogClose className="border px-4 py-2">Cancel</DialogClose>
-          <Button onClick={handleSave} disabled={!saveAllowed}>
+        <DialogFooter className="profile-dialog-footer">
+          <DialogClose className="profile-dialog-cancel">Cancel</DialogClose>
+          <Button className="profile-dialog-save" onClick={handleSave} disabled={!saveAllowed}>
             {isSaving ? "Saving…" : "Save"}
           </Button>
         </DialogFooter>

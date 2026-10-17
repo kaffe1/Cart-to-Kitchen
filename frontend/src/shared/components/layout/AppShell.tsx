@@ -1,47 +1,30 @@
 import {
   ChefHat,
   CircleUserRound,
-  Palette,
+  LogIn,
   ShoppingBasket,
   Store,
 } from 'lucide-react';
 import { useEffect, type ReactNode } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { appRoutes } from '@/app/routes';
 import { Button } from '@/shared/components/ui/button';
 import { FeedbackBanner, FeedbackToast } from '@/shared/components/ui/FeedbackBanner';
 import { appSession } from '../../api/appSession';
 import { useAppShellPresenter } from './useAppShellPresenter';
 
-const primaryNavItems = [
+const navItems = [
   { href: appRoutes.store, label: 'Store', icon: Store },
   { href: appRoutes.kitchen, label: 'Kitchen', icon: ChefHat },
   { href: appRoutes.profile, label: 'Me', icon: CircleUserRound },
 ];
 
-const navItems = import.meta.env.DEV
-  ? [
-      ...primaryNavItems,
-      { href: appRoutes.designSystem, label: 'Design sys', icon: Palette },
-    ]
-  : primaryNavItems;
-
 export function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const presenter = useAppShellPresenter();
-  const navigate = useNavigate();
   useEffect(() => {
     void appSession.ensureShoppingSession().catch(() => undefined);
   }, []);
-
-  async function signOut() {
-    try {
-      await appSession.logout();
-      void navigate('/login', { replace: true });
-    } catch {
-      /* Session errors are shown below. */
-    }
-  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -80,28 +63,21 @@ export function AppShell({ children }: { children: ReactNode }) {
             })}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="header-actions">
             {presenter.user && (
-              <span className="hidden max-w-32 truncate text-sm sm:inline">
-                {presenter.user.displayName}
+              <span className="header-user-name">
+                Hi, {presenter.user.displayName} !
               </span>
             )}
             {presenter.user?.mode !== 'account' && (
-              <Link to={appRoutes.login}>Sign in</Link>
-            )}
-            {presenter.user && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => void signOut()}
-                disabled={
-                  presenter.isAuthenticating ||
-                  presenter.isCheckingOut ||
-                  presenter.pendingCartWrites > 0
-                }
+              <Link
+                className="header-sign-in"
+                to={appRoutes.login}
+                aria-label="Sign in"
+                title="Sign in"
               >
-                Sign out
-              </Button>
+                <LogIn size={18} />
+              </Link>
             )}
           </div>
         </div>
