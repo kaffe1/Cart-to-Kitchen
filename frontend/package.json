@@ -9,7 +9,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "lint": "oxlint src vite.config.ts",
+    "lint": "oxlint src vite.config.ts && node quality/check-no-let-var.mjs",
     "test:store": "node --experimental-strip-types --test tests/store-scene.test.mjs",
     "test:kitchen": "node --import ./tests/register-typescript.mjs --test tests/kitchen-demo.test.mjs",
     "format": "oxfmt",

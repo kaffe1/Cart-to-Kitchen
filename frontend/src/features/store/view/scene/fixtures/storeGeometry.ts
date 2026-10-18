@@ -32,6 +32,8 @@ export function getCounterGuard(kind: StoreSection['kind']) {
 
 export function getBasketStandBoxes(): StoreBox[] {
   const boxes: StoreBox[] = [];
+  // Fixture generation uses a local append-only builder. The array cannot
+  // escape until construction is complete and returned boxes are never edited.
   const add = (
     position: Position3,
     size: Position3,
@@ -46,7 +48,7 @@ export function getBasketStandBoxes(): StoreBox[] {
 
   // Tapered, nested baskets: each has a bottom, open mesh walls, and an open top.
   // Different widths/depths keep overlapping basket walls from being coplanar.
-  for (let tier = 0; tier < 3; tier++) {
+  for (const tier of [0, 1, 2]) {
     const bottom = 0.385 + tier * 0.065;
     const width = 0.64 + tier * 0.05;
     const depth = 0.46 + tier * 0.04;
@@ -57,7 +59,7 @@ export function getBasketStandBoxes(): StoreBox[] {
       '#b76b40',
     );
     for (const side of [-1, 1]) {
-      for (let column = 0; column < 7; column++)
+      for (const column of Array.from({ length: 7 }, (_, index) => index))
         add(
           [
             ((column - 3) * (width - 0.03)) / 6,
@@ -67,7 +69,7 @@ export function getBasketStandBoxes(): StoreBox[] {
           [0.023, 0.215, 0.023],
           '#b76b40',
         );
-      for (let column = 0; column < 5; column++)
+      for (const column of Array.from({ length: 5 }, (_, index) => index))
         add(
           [
             (side * width) / 2,
@@ -121,6 +123,7 @@ export function getFixtureBoxes(
   slots: ProductSlot[],
 ): StoreBox[] {
   const boxes: StoreBox[] = [];
+  // As above, mutation is limited to a private append-only construction buffer.
   const add = (
     position: Position3,
     size: Position3,
@@ -130,7 +133,7 @@ export function getFixtureBoxes(
   const { width: w, depth: d, kind } = section;
   if (kind === 'produce') {
     add([0, 0.34, 0], [w - 0.12, 0.68, d - 0.1], FRAME);
-    for (let i = 0; i < 5; i++)
+    for (const i of Array.from({ length: 5 }, (_, index) => index))
       add(
         [0, 0.1 + i * 0.12, d / 2 - 0.045],
         [w - 0.18, 0.085, 0.045],
@@ -139,11 +142,10 @@ export function getFixtureBoxes(
     section.levels.forEach((level, tier) => {
       add([0, level - 0.055, tier === 0 ? 0.36 : -0.32], [w, 0.08, 0.65], WOOD);
     });
-    for (
-      let index = 0;
-      index < section.columns * section.levels.length;
-      index++
-    ) {
+    for (const index of Array.from(
+      { length: section.columns * section.levels.length },
+      (_, slotIndex) => slotIndex,
+    )) {
       const {
         position: [x, y, z],
         width,
@@ -184,7 +186,10 @@ export function getFixtureBoxes(
       );
     }
     // Modular uprights and slots add a recognizable supermarket shelf rhythm.
-    for (let i = 0; i <= (cold ? 3 : 2); i++) {
+    for (const i of Array.from(
+      { length: (cold ? 3 : 2) + 1 },
+      (_, index) => index,
+    )) {
       const x = -w / 2 + 0.15 + (i * (w - 0.3)) / (cold ? 3 : 2);
       add(
         [x, bodyBottom + bodyHeight / 2, -d / 2 + 0.12],
@@ -196,7 +201,7 @@ export function getFixtureBoxes(
         },
       );
       if (!cold)
-        for (let slot = 0; slot < 11; slot++)
+        for (const slot of Array.from({ length: 11 }, (_, index) => index))
           add(
             [x, 0.39 + slot * 0.14, -d / 2 + 0.151],
             [0.018, 0.045, 0.004],
@@ -215,7 +220,10 @@ export function getFixtureBoxes(
     });
     add([0, h + 0.045, 0], [w + 0.02, 0.08, d + 0.02], cold ? FRAME : IVORY);
     add([0, h + 0.065, d / 2 + 0.04], [w - 0.02, 0.26, 0.075], section.accent);
-    for (let vent = 0; vent < Math.floor(w / 0.13); vent++)
+    for (const vent of Array.from(
+      { length: Math.floor(w / 0.13) },
+      (_, index) => index,
+    ))
       add(
         [-w / 2 + 0.13 + vent * 0.13, 0.15, d / 2 + 0.005],
         [0.06, 0.085, 0.012],
@@ -257,7 +265,10 @@ export function getFixtureBoxes(
       blocking: false,
     });
     add([0, 1.54, -d / 2 + 0.02], [w - 0.04, 0.29, 0.07], section.accent);
-    for (let i = 0; i < Math.floor(w / 0.15); i++)
+    for (const i of Array.from(
+      { length: Math.floor(w / 0.15) },
+      (_, index) => index,
+    ))
       add(
         [-w / 2 + 0.13 + i * 0.15, 0.12, d / 2 + 0.047],
         [0.07, 0.05, 0.008],

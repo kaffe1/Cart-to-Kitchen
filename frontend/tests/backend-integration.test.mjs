@@ -14,20 +14,22 @@ test(
   { skip: !apiUrl },
   async (t) => {
     const nativeFetch = globalThis.fetch;
-    let cookie = '';
+    // Mutable cookie state emulates the browser-managed cookie jar that Node's
+    // fetch intentionally does not provide.
+    const cookieJar = { value: '' };
     t.after(() => {
       globalThis.fetch = nativeFetch;
     });
     // Node has no browser cookie jar. Supply one around the production HTTP client.
     globalThis.fetch = async (path, init = {}) => {
       const headers = new Headers(init.headers);
-      if (cookie) headers.set('Cookie', cookie);
+      if (cookieJar.value) headers.set('Cookie', cookieJar.value);
       const response = await nativeFetch(
         `${apiUrl}${String(path).replace(/^\/api\/v1/, '')}`,
         { ...init, headers },
       );
       const setCookie = response.headers.get('set-cookie');
-      if (setCookie) cookie = setCookie.split(';')[0];
+      if (setCookie) cookieJar.value = setCookie.split(';')[0];
       return response;
     };
     const preflight = await nativeFetch(`${apiUrl}/auth/login`, {

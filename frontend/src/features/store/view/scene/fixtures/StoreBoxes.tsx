@@ -14,6 +14,8 @@ function BoxBatch({ boxes }: { boxes: StoreBox[] }) {
   useLayoutEffect(() => {
     const mesh = ref.current;
     if (!mesh) return;
+    // InstancedMesh exposes only imperative matrix/layer update APIs. This
+    // effect mutates the owned GPU object, never application data or props.
     boxes.forEach((box, index) => {
       mesh.setMatrixAt(
         index,
@@ -51,15 +53,12 @@ function BoxBatch({ boxes }: { boxes: StoreBox[] }) {
 // Batch architecture by material, keeping solid occluders on the picking layer.
 export function StoreBoxes({ boxes }: { boxes: StoreBox[] }) {
   const batches = useMemo(() => {
-    const groups = new Map<string, StoreBox[]>();
-    boxes.forEach((box) => {
+    const groups = boxes.reduce<Record<string, StoreBox[]>>((current, box) => {
       // Actual-size geometry keeps bevels physically uniform on long, thin boxes.
       const key = `${box.color}:${box.metalness ?? 0}:${box.roughness ?? 0.75}:${box.blocking !== false}:${box.size.join(',')}:${box.radius ?? 0.012}`;
-      const group = groups.get(key) ?? [];
-      group.push(box);
-      groups.set(key, group);
-    });
-    return [...groups.entries()];
+      return { ...current, [key]: [...(current[key] ?? []), box] };
+    }, {});
+    return Object.entries(groups);
   }, [boxes]);
   return (
     <>

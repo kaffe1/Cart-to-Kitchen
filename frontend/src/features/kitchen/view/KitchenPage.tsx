@@ -52,20 +52,35 @@ const positionDragIcon: Modifier = ({ transform, activeNodeRect: rect, activator
     ? activatorEvent as PointerEvent : null;
   const fromCounter = active?.data.current?.source === 'counter';
   // dnd-kit measures counter nodes without their CSS translate(-50%, -50%).
-  let x = transform.x + (fromCounter ? -27 : pointer ? pointer.clientX - rect.left - 27 : 0);
-  let y = transform.y + (fromCounter ? -27 : pointer ? pointer.clientY - rect.top - 27 : 0);
+  const initial = {
+    x: transform.x + (fromCounter ? -27 : pointer ? pointer.clientX - rect.left - 27 : 0),
+    y: transform.y + (fromCounter ? -27 : pointer ? pointer.clientY - rect.top - 27 : 0),
+  };
   const zone = document.getElementById('kitchen-counter')?.getBoundingClientRect();
   const stage = document.getElementById('kitchen-counter-stage')?.getBoundingClientRect();
-  const center = { x: rect.left + x + 27, y: rect.top + y + 27 };
-  if (zone && stage && center.x >= zone.left && center.x <= zone.right && center.y >= zone.top && center.y <= zone.bottom) {
-    x += Math.min(stage.right, Math.max(stage.left, center.x)) - center.x;
-    y += Math.min(stage.bottom, Math.max(stage.top, center.y)) - center.y;
-  }
-  return { ...transform, x, y, scaleX: 1, scaleY: 1 };
+  const center = { x: rect.left + initial.x + 27, y: rect.top + initial.y + 27 };
+  const isOverCounter = zone && stage
+    && center.x >= zone.left && center.x <= zone.right
+    && center.y >= zone.top && center.y <= zone.bottom;
+  const correction = isOverCounter
+    ? {
+        x: Math.min(stage.right, Math.max(stage.left, center.x)) - center.x,
+        y: Math.min(stage.bottom, Math.max(stage.top, center.y)) - center.y,
+      }
+    : { x: 0, y: 0 };
+  return {
+    ...transform,
+    x: initial.x + correction.x,
+    y: initial.y + correction.y,
+    scaleX: 1,
+    scaleY: 1,
+  };
 };
 
 export function KitchenPage() {
   const presenter = useKitchenPresenter();
+  // Pointer coordinates must be updated by native events between dnd-kit
+  // renders. Refs are the library-supported mutable bridge for that data.
   const resultsRef = useRef<HTMLDivElement>(null);
   const grabOffsetRef = useRef<GrabOffset | null>(null);
   const pointerRef = useRef<{ x: number; y: number } | null>(null);

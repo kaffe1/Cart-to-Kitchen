@@ -2,6 +2,8 @@ import { dummyRecipes } from '../../../shared/api/dummyData';
 import { requestJson } from '../../../shared/api/httpClient';
 import type { Recipe } from './recipes.types';
 const recipeCache = new Map<string, Recipe>();
+// Module-local Map mutation retains fetched recipes across route unmounts;
+// recipe values themselves remain immutable and consumers cannot access the map.
 export function rememberRecipes(recipes: Recipe[]) {
   for (const recipe of recipes) recipeCache.set(recipe.id, recipe);
 }

@@ -29,6 +29,10 @@ npm run preview
 
 The development server normally starts at `http://localhost:5173`.
 
+`npm run lint` also rejects every JavaScript/TypeScript `let` or `var`
+declaration in source and tests. The few intentional imperative API boundaries
+are documented in [MUTATION_RATIONALE.md](./MUTATION_RATIONALE.md).
+
 ## Architecture
 
 ```text

@@ -7,6 +7,8 @@ import type { Recipe } from '../../recipes/model/recipes.types';
 // Route navigation unmounts KitchenPage. Keep the last discovery result scoped
 // to its user so returning from Details restores Recipe Radar without a refetch.
 const discoveryCache = new Map<string, Recipe[]>();
+// This non-reactive navigation cache intentionally uses Map mutation. Cached
+// arrays are replaced as values and the cache never escapes this module.
 
 export function getCachedDiscovery(userId: string): Recipe[] | null {
   return discoveryCache.has(userId) ? discoveryCache.get(userId)! : null;

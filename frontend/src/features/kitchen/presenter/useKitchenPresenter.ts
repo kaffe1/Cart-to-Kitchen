@@ -119,6 +119,8 @@ export function useKitchenPresenter() {
 
   async function refreshMatches() {
     if (userId && session.shopping && session.status === 'ready') {
+      // AbortController/ref mutation represents ownership of an in-flight
+      // browser request and prevents stale responses from winning a race.
       requestRef.current?.abort();
       const controller = new AbortController();
       requestRef.current = controller;

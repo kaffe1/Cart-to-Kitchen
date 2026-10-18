@@ -2,7 +2,7 @@ import type { Ingredient } from '../../../model/store.types';
 import type { FixtureKind } from '../layout/storeLayout';
 
 export interface CartFlight {
-  token: number;
+  token: string;
   ingredient: Ingredient;
   kind: FixtureKind;
   target: readonly [number, number];

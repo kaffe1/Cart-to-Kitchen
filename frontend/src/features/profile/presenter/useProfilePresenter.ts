@@ -22,13 +22,13 @@ export function useProfilePresenter() {
   const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
-    let active = true;
+    const controller = new AbortController();
     getProfile()
       .then((loadedProfile) => {
-        if (active) setProfile(loadedProfile);
+        if (!controller.signal.aborted) setProfile(loadedProfile);
       })
       .catch((error: unknown) => {
-        if (!active) return;
+        if (controller.signal.aborted) return;
         const isSessionError =
           error instanceof ApiError &&
           (error.code === "invalid_session" || error.code === "auth_required");
@@ -37,11 +37,10 @@ export function useProfilePresenter() {
         }
       })
       .finally(() => {
-        if (active) setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       });
-    return () => {
-      active = false;
-    };
+    // AbortController is the platform's intentionally mutable lifecycle signal.
+    return () => controller.abort();
   }, [loadAttempt]);
 
   const isGuestUser =

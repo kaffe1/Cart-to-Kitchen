@@ -28,13 +28,7 @@ const shopping = (id = 1) => ({
   cart: [],
   inventory: [],
 });
-const deferred = () => {
-  let resolve;
-  const promise = new Promise((r) => {
-    resolve = r;
-  });
-  return { promise, resolve };
-};
+const deferred = () => Promise.withResolvers();
 
 function backend(overrides = {}) {
   const data = { user: null, shopping: shopping(), calls: [], ...overrides };
@@ -427,10 +421,9 @@ test('late shopping read cannot overwrite a new account', async () => {
   await session.ensureShoppingSession();
   const entered = deferred();
   const release = deferred();
-  let firstRead = true;
   data.before = async (path) => {
-    if (path === '/shopping-sessions/active' && firstRead) {
-      firstRead = false;
+    if (path === '/shopping-sessions/active') {
+      data.before = undefined;
       entered.resolve();
       await release.promise;
     }

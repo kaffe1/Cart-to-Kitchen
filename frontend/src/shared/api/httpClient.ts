@@ -1,5 +1,14 @@
 import { ApiError } from './apiError';
 
+interface ErrorPayload {
+  detail?: { loc?: string[]; msg?: string }[];
+  error?: {
+    code?: string;
+    message?: string;
+    details?: { code?: string };
+  };
+}
+
 const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL ?? '/api/v1').replace(
   /\/$/,
   '',
@@ -8,34 +17,16 @@ export async function requestJson<T>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
-  const headers = new Headers(init?.headers);
   const isForm = init?.body instanceof FormData;
-  if (init?.body && !isForm && !headers.has('Content-Type'))
-    headers.set('Content-Type', 'application/json');
-  let response: Response;
-  let body: string;
-  try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
-      ...init,
-      credentials: 'include',
-      headers,
-    });
-    body = await response.text();
-  } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') throw error;
-    throw new ApiError(
-      'Unable to reach the server. Check your connection and try again.',
-      'NETWORK_ERROR',
-      0,
-    );
-  }
-
-  let payload;
-  try {
-    payload = body ? JSON.parse(body) : undefined;
-  } catch {
-    /* A proxy may return HTML. */
-  }
+  const suppliedHeaders = new Headers(init?.headers);
+  const headers = new Headers([
+    ...suppliedHeaders.entries(),
+    ...(init?.body && !isForm && !suppliedHeaders.has('Content-Type')
+      ? ([['Content-Type', 'application/json']] as [string, string][])
+      : []),
+  ]);
+  const { response, body } = await fetchResponse(path, init, headers);
+  const payload = parsePayload(body);
 
   if (!response.ok) {
     const validation = Array.isArray(payload?.detail)
@@ -62,4 +53,36 @@ export async function requestJson<T>(
       response.status,
     );
   return payload as T;
+}
+
+async function fetchResponse(
+  path: string,
+  init: RequestInit | undefined,
+  headers: Headers,
+) {
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      ...init,
+      credentials: 'include',
+      headers,
+    });
+    return { response, body: await response.text() };
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') throw error;
+    throw new ApiError(
+      'Unable to reach the server. Check your connection and try again.',
+      'NETWORK_ERROR',
+      0,
+    );
+  }
+}
+
+function parsePayload(body: string): ErrorPayload | undefined {
+  if (!body) return undefined;
+  try {
+    return JSON.parse(body) as ErrorPayload;
+  } catch {
+    // A proxy may return HTML instead of the API's JSON response.
+    return undefined;
+  }
 }

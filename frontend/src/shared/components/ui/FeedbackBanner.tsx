@@ -30,6 +30,8 @@ export function FeedbackToast({
   onDismiss,
 }: FeedbackToastProps) {
   const [visible, setVisible] = useState(false);
+  // The ref keeps the latest callback available to timers without restarting
+  // their lifecycle whenever a parent creates a new function identity.
   const onDismissRef = useRef(onDismiss);
 
   useEffect(() => {

@@ -58,21 +58,23 @@ test('a picked ingredient follows an upward arc to the basket while shrinking', 
 });
 
 test('shopping pause survives repeated unlock events, and resumes only after pointer lock succeeds', () => {
-  let mode = 'entry';
-  assert.equal(shoppingSessionReducer(mode, 'unlock'), 'entry');
-  mode = shoppingSessionReducer(mode, 'lock');
-  for (const code of ['KeyB', 'Escape']) {
-    assert.equal(getShoppingShortcut(mode, code), 'pause');
-    mode = shoppingSessionReducer(mode, 'pause');
-    mode = shoppingSessionReducer(mode, 'unlock');
-    mode = shoppingSessionReducer(mode, 'unlock');
-    assert.equal(mode, 'paused');
-    assert.equal(getShoppingShortcut(mode, 'KeyB'), 'resume');
+  assert.equal(shoppingSessionReducer('entry', 'unlock'), 'entry');
+  const mode = ['KeyB', 'Escape'].reduce((currentMode, code) => {
+    assert.equal(getShoppingShortcut(currentMode, code), 'pause');
+    const paused = shoppingSessionReducer(
+      shoppingSessionReducer(
+        shoppingSessionReducer(currentMode, 'pause'),
+        'unlock',
+      ),
+      'unlock',
+    );
+    assert.equal(paused, 'paused');
+    assert.equal(getShoppingShortcut(paused, 'KeyB'), 'resume');
     // A blocked resume request produces no lock event and keeps the cart open.
-    assert.equal(getShoppingShortcut(mode, 'Escape'), null);
-    mode = shoppingSessionReducer(mode, 'lock');
-    assert.equal(mode, 'shopping');
-  }
+    assert.equal(getShoppingShortcut(paused, 'Escape'), null);
+    return shoppingSessionReducer(paused, 'lock');
+  }, shoppingSessionReducer('entry', 'lock'));
+  assert.equal(mode, 'shopping');
   assert.equal(
     shoppingSessionReducer('shopping', 'unlock'),
     'paused',
@@ -192,7 +194,7 @@ test('display copies fit their slots without crossing crate sides or adjacent sh
 
 test('price cards stay outside crate fronts and grocery shelf rails', () => {
   for (const section of STORE_SECTIONS) {
-    for (let index = 0; index < section.ingredientIds.length; index++) {
+    for (const index of section.ingredientIds.keys()) {
       const slot = getProductSlot(section, index);
       const nearestZ =
         slot.labelPosition[2] -
@@ -232,7 +234,7 @@ test('the lowered meat guard clears the close-up sightline to all products and p
   const railZ = section.depth / 2;
   const railTop = guard.railY + guard.railHeight / 2;
   assert.ok(guard.top < 1.1);
-  for (let index = 0; index < section.ingredientIds.length; index++) {
+  for (const index of section.ingredientIds.keys()) {
     const slot = getProductSlot(section, index);
     for (const target of [
       [slot.position[1] + 0.06, slot.position[2]],
@@ -255,12 +257,11 @@ test('different fixture materials do not share overlapping coplanar flat faces',
         (_, index) => getProductSlot(section, index),
       ),
     );
-    for (let i = 0; i < boxes.length; i++)
-      for (let j = i + 1; j < boxes.length; j++) {
-        const a = boxes[i],
-          b = boxes[j];
+    for (const [i, a] of boxes.entries())
+      for (const [offset, b] of boxes.slice(i + 1).entries()) {
+        const j = i + offset + 1;
         if (a.color === b.color) continue;
-        for (let axis = 0; axis < 3; axis++)
+        for (const axis of [0, 1, 2])
           for (const side of [-1, 1]) {
             const aPlane = a.position[axis] + (side * a.size[axis]) / 2;
             const bPlane = b.position[axis] + (side * b.size[axis]) / 2;
@@ -352,8 +353,9 @@ test('all stocked fixture fronts and the checkout are reachable from the entranc
   const start = [0, 37];
   const queue = [start];
   const visited = new Set([key(...start)]);
-  for (let i = 0; i < queue.length; i++) {
-    const [x, z] = queue[i];
+  // The queue and visited set are the intentionally mutable frontier of this
+  // breadth-first-search test; no application data is exposed or modified.
+  for (const [x, z] of queue) {
     for (const [dx, dz] of [
       [1, 0],
       [-1, 0],
@@ -371,7 +373,10 @@ test('all stocked fixture fronts and the checkout are reachable from the entranc
   const reachable = (x, z) =>
     queue.some(([qx, qz]) => Math.hypot(qx * step - x, qz * step - z) < 0.3);
   for (const section of STORE_SECTIONS)
-    for (let column = 0; column < section.columns; column++) {
+    for (const column of Array.from(
+      { length: section.columns },
+      (_, index) => index,
+    )) {
       const localX = getProductSlot(section, column).position[0];
       const localZ = section.depth / 2 + 0.6;
       const x =

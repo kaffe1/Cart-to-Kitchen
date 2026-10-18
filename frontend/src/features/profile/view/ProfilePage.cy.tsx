@@ -3,10 +3,10 @@ import { ProfilePage } from "./ProfilePage";
 
 describe("<ProfilePage />", () => {
   it("retries after a transient profile load failure", () => {
-    let attempts = 0;
+    const attempt = cy.stub().as("profileAttempt");
     cy.intercept("GET", "**/api/v1/auth/me", (request) => {
-      attempts += 1;
-      if (attempts === 1) {
+      attempt();
+      if (attempt.callCount === 1) {
         request.reply({ statusCode: 500, body: { error: { message: "Offline" } } });
         return;
       }

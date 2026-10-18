@@ -30,7 +30,7 @@ interface MarketSceneProps {
   onExplorationEnd: () => void;
   controlsRef: RefObject<LockControls | null>;
   flights: readonly CartFlight[];
-  onFlightComplete: (token: number) => void;
+  onFlightComplete: (token: string) => void;
 }
 
 export function MarketScene({

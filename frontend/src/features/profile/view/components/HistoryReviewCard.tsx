@@ -62,6 +62,8 @@ export function HistoryReviewCard({
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    // File inputs expose reset as an imperative DOM operation; clearing it
+    // allows the same file to trigger a later change event.
     event.target.value = "";
     if (!file) return;
     const validationError = validateImageFile(file);
