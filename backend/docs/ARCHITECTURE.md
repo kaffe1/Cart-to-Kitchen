@@ -171,11 +171,11 @@ business failures become structured errors at the HTTP boundary.
 
 ## 5. Data flow
 
-### 5.1 Checkout 资金路径
+### 5.1 Checkout funds flow
 
 ![Checkout data flow](dataflow-checkout.png)
 
-### 5.2 The cook loop 做饭闭环
+### 5.2 Cooking completion loop
 
 ![Cook data flow](dataflow-cook.png)
 
