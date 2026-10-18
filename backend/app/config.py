@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     session_hours: int = 24 * 7
     session_cookie: str = "ctk_session"
     allowed_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    # Same-origin/local keeps Lax; a cross-site deployment (frontend and API on
+    # different domains) must set samesite=none with secure=true, or browsers
+    # will not send the session cookie on cross-site requests.
+    cookie_samesite: str = "lax"
+    cookie_secure: bool = False
 
     @property
     def origins(self) -> list[str]:
