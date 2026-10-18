@@ -35,6 +35,7 @@ export function ProfilePage() {
     handleReviewSave,
     isLoading,
     loadError,
+    retryProfile,
   } = useProfilePresenter();
 
   const handleSignOut = async () => {
@@ -71,6 +72,9 @@ export function ProfilePage() {
           <div>
             <span className="eyebrow">Profile unavailable</span>
             <h1>{loadError}</h1>
+            <Button variant="outline" onClick={retryProfile}>
+              Retry
+            </Button>
           </div>
         </div>
       </section>

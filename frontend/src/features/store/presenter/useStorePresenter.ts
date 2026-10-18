@@ -23,9 +23,6 @@ export function useStorePresenter() {
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [catalogAttempt, setCatalogAttempt] = useState(0);
-  const [selectedIngredientId, setSelectedIngredientId] = useState<
-    string | null
-  >('tomato');
   const [category, setCategory] = useState<IngredientCategory | 'All'>('All');
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'3d' | 'grid'>('3d');
@@ -121,9 +118,6 @@ export function useStorePresenter() {
     filteredIngredients,
     cart: snapshot.shopping?.cart ?? [],
     wallet: snapshot.shopping?.wallet ?? null,
-    selectedIngredient:
-      ingredients.find((item) => item.id === selectedIngredientId) ?? null,
-    selectedIngredientId,
     category,
     search,
     viewMode,
@@ -152,7 +146,6 @@ export function useStorePresenter() {
       setMessage(null);
       setError(null);
     },
-    setSelectedIngredientId,
     setCategory,
     setSearch,
     setViewMode,

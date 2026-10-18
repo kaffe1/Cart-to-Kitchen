@@ -1,7 +1,17 @@
 import type { CookedRecipe } from "@/features/profile/model/profile.types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChefHat } from "lucide-react";
 import { HistoryReviewCard } from "./HistoryReviewCard";
+
+const EXPANDED_REVIEW_STORAGE_KEY = "ctk-profile-expanded-review";
+
+function getStoredExpandedReview() {
+  try {
+    return sessionStorage.getItem(EXPANDED_REVIEW_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
 
 type HistoryPanelProps = {
   cookedRecipes: CookedRecipe[];
@@ -9,7 +19,26 @@ type HistoryPanelProps = {
 };
 
 export function HistoryPanel({ cookedRecipes, onReviewSave }: HistoryPanelProps) {
-  const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
+  const [activeEntryId, setActiveEntryId] = useState<string | null>(
+    getStoredExpandedReview,
+  );
+  const expandedEntryId = cookedRecipes.some(
+    (recipe) => recipe.entryId === activeEntryId,
+  )
+    ? activeEntryId
+    : null;
+
+  useEffect(() => {
+    try {
+      if (expandedEntryId) {
+        sessionStorage.setItem(EXPANDED_REVIEW_STORAGE_KEY, expandedEntryId);
+      } else {
+        sessionStorage.removeItem(EXPANDED_REVIEW_STORAGE_KEY);
+      }
+    } catch {
+      // The review still works when browser storage is unavailable.
+    }
+  }, [expandedEntryId]);
 
   return (
     <article className="profile-card profile-history-card">
@@ -37,15 +66,15 @@ export function HistoryPanel({ cookedRecipes, onReviewSave }: HistoryPanelProps)
             <HistoryReviewCard
               key={recipe.entryId}
               recipe={recipe}
-              expanded={activeEntryId === recipe.entryId}
+              expanded={expandedEntryId === recipe.entryId}
               onToggle={() =>
                 setActiveEntryId((current) =>
                   current === recipe.entryId ? null : recipe.entryId,
                 )
               }
               onSave={async (entryId, text, image) => {
-                await onReviewSave(entryId, text, image ?? null); 
-                setActiveEntryId(null); 
+                await onReviewSave(entryId, text, image ?? null);
+                setActiveEntryId(entryId);
               }}
             />
           ))}

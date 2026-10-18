@@ -1,7 +1,8 @@
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 export const IMAGE_ACCEPT = ALLOWED_IMAGE_TYPES.join(",");
-const MAX_REVIEW_LENGTH = 2000;
+export const MAX_REVIEW_TEXT_LENGTH = 1500;
+const MAX_REVIEW_HTML_LENGTH = 10000;
 
 export const validateImageFile = (file: File): string | null => {
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
@@ -46,6 +47,11 @@ export const validateReview = (
   plainText: string,
 ): string | null => {
   if (plainText.trim().length === 0) return "A review must contain some text";
-  if (html.length > MAX_REVIEW_LENGTH) return "The review needs to be shorter";
+  if (plainText.length > MAX_REVIEW_TEXT_LENGTH) {
+    return `The review must be ${MAX_REVIEW_TEXT_LENGTH} characters or fewer`;
+  }
+  if (html.length > MAX_REVIEW_HTML_LENGTH) {
+    return "The review has too much formatting. Simplify the formatting and try again";
+  }
   return null;
 };

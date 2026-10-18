@@ -5,7 +5,7 @@ behaviour is covered by the Postman collection — see README."""
 from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
-from app.profanity import PATTERN, check_review
+from app.profanity import MAX_REVIEW_TEXT_LENGTH, PATTERN, check_review
 from app.services.recipe_service import match_tiers
 from app.services.wallet_service import grants_between, next_grant_at
 from app.errors import RuleValidation
@@ -66,3 +66,16 @@ def test_profanity_rejects_listed_words_not_substrings():
 def test_profanity_pattern_word_boundaries():
     assert PATTERN.search("what a damn joke")
     assert not PATTERN.search("hellfire")
+
+
+def test_review_length_counts_visible_text_instead_of_html_tags():
+    check_review(f"<p><strong>{'a' * MAX_REVIEW_TEXT_LENGTH}</strong></p>")
+    with pytest.raises(RuleValidation) as error:
+        check_review(f"<p>{'a' * (MAX_REVIEW_TEXT_LENGTH + 1)}</p>")
+    assert error.value.details == {"code": "REVIEW_TOO_LONG"}
+
+
+def test_review_rejects_markup_without_visible_text():
+    with pytest.raises(RuleValidation) as error:
+        check_review("<p><strong></strong></p>")
+    assert error.value.details == {"code": "REVIEW_EMPTY"}

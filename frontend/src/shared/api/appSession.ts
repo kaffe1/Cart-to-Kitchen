@@ -23,6 +23,8 @@ export interface AppSessionState {
   checkoutNotice: string | null;
 }
 
+type UserProfilePatch = Partial<Pick<AppUser, 'displayName' | 'email'>>;
+
 const initialState: AppSessionState = {
   status: 'idle',
   user: null,
@@ -326,6 +328,11 @@ export function createAppSession(request: typeof requestJson = requestJson) {
     if (state.checkoutNotice) publish({ checkoutNotice: null });
   }
 
+  function patchUser(userId: string, patch: UserProfilePatch) {
+    if (state.user?.id !== userId) return;
+    publish({ user: { ...state.user, ...patch } });
+  }
+
   return {
     getSnapshot: () => state,
     getServerSnapshot: () => initialState,
@@ -341,6 +348,7 @@ export function createAppSession(request: typeof requestJson = requestJson) {
     updateCart,
     checkout,
     clearCheckoutNotice,
+    patchUser,
     login: (input: LoginInput) => authenticate('/auth/login', input),
     register: (input: RegisterInput) => authenticate('/auth/register', input),
     guest: () => authenticate('/auth/guest'),

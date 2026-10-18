@@ -182,7 +182,6 @@ export function StorePage() {
                       ingredient={ingredient}
                       onAdd={presenter.addToCart}
                       disabled={presenter.isCheckingOut}
-                      onSelect={presenter.setSelectedIngredientId}
                     />
                   ))}
                 </div>

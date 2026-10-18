@@ -11,6 +11,8 @@ from .errors import RuleValidation
 
 WORDS = ("damn", "shit", "crap", "hell")
 PATTERN = re.compile(r"\b(?:" + "|".join(WORDS) + r")\b", re.IGNORECASE)
+MAX_REVIEW_TEXT_LENGTH = 1500
+MAX_REVIEW_HTML_LENGTH = 10000
 
 _BLOCK_BREAKS = re.compile(r"</p>|<br\s*/?>", re.IGNORECASE)
 _TAGS = re.compile(r"<[^>]+>")
@@ -21,7 +23,18 @@ def user_text(raw: str) -> str:
 
 
 def check_review(text: str) -> None:
-    if PATTERN.search(user_text(text)):
+    visible_text = user_text(text).strip()
+    if not visible_text:
+        raise RuleValidation(
+            "A review must contain some text.",
+            details={"code": "REVIEW_EMPTY"},
+        )
+    if len(visible_text) > MAX_REVIEW_TEXT_LENGTH:
+        raise RuleValidation(
+            f"The review must be {MAX_REVIEW_TEXT_LENGTH} characters or fewer.",
+            details={"code": "REVIEW_TOO_LONG"},
+        )
+    if PATTERN.search(visible_text):
         raise RuleValidation(
             "The review contains words that are not allowed.",
             details={"code": "PROFANITY_REJECTED"},
