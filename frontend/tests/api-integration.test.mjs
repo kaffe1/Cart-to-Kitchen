@@ -3,6 +3,10 @@ import test from 'node:test';
 import { createAppSession } from '../src/shared/api/appSession.ts';
 import { ApiError } from '../src/shared/api/apiError.ts';
 import { requestJson } from '../src/shared/api/httpClient.ts';
+import {
+  MAX_REVIEW_TEXT_LENGTH,
+  validateReview,
+} from '../src/features/profile/model/profile.validation.ts';
 
 const user = (id = '1', mode = 'guest') => ({
   id,
@@ -24,13 +28,7 @@ const shopping = (id = 1) => ({
   cart: [],
   inventory: [],
 });
-const deferred = () => {
-  let resolve;
-  const promise = new Promise((r) => {
-    resolve = r;
-  });
-  return { promise, resolve };
-};
+const deferred = () => Promise.withResolvers();
 
 function backend(overrides = {}) {
   const data = { user: null, shopping: shopping(), calls: [], ...overrides };
@@ -102,6 +100,24 @@ test('existing account restores without creating a guest', async () => {
   assert.equal(
     data.calls.some((c) => c.path === '/auth/guest'),
     false,
+  );
+});
+
+test('profile patches update only the current cached user', async () => {
+  const { session } = backend({ user: user('account-1', 'account') });
+  await session.initialize();
+  session.patchUser('account-1', { displayName: 'New display name' });
+  assert.equal(session.getSnapshot().user.displayName, 'New display name');
+  session.patchUser('another-user', { displayName: 'Wrong user' });
+  assert.equal(session.getSnapshot().user.displayName, 'New display name');
+});
+
+test('review validation limits visible text without counting formatting tags', () => {
+  const atLimit = 'a'.repeat(MAX_REVIEW_TEXT_LENGTH);
+  assert.equal(validateReview(`<p><strong>${atLimit}</strong></p>`, atLimit), null);
+  assert.match(
+    validateReview(`<p>${atLimit}a</p>`, `${atLimit}a`),
+    /1500 characters or fewer/,
   );
 });
 
@@ -405,10 +421,9 @@ test('late shopping read cannot overwrite a new account', async () => {
   await session.ensureShoppingSession();
   const entered = deferred();
   const release = deferred();
-  let firstRead = true;
   data.before = async (path) => {
-    if (path === '/shopping-sessions/active' && firstRead) {
-      firstRead = false;
+    if (path === '/shopping-sessions/active') {
+      data.before = undefined;
       entered.resolve();
       await release.promise;
     }

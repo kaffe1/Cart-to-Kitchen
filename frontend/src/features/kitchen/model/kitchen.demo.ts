@@ -10,33 +10,46 @@ export interface KitchenDemoState {
 
 const emptyState: KitchenDemoState = { counter: [], favorites: [] };
 const initialSnapshot: Record<string, KitchenDemoState> = {};
-let snapshot = initialSnapshot;
+// The Set implements useSyncExternalStore subscription/unsubscription and does
+// not hold mutable domain state.
 const listeners = new Set<() => void>();
 const knownIds = new Set(allIngredients.map((item) => item.id));
 const recipeIds = new Set(dummyRecipes.map((recipe) => recipe.id));
 const validRecipeId = (id: unknown): id is string => typeof id === 'string' && (recipeIds.has(id) || /^\d+$/.test(id));
-let placementSequence = 0;
+// This object is the isolated mutable core required by useSyncExternalStore.
+// Published KitchenDemoState snapshots are always replaced, never modified.
+const runtime = {
+  snapshot: initialSnapshot,
+  placementSequence: 0,
+};
 
 function clamp(value: number) {
   return Math.min(1, Math.max(0, value));
 }
 
-function defaultPosition(existing: CounterPlacement[]) {
-  let position = { x: 0.5, y: 0.5 };
-  for (let attempt = 0; attempt < 40; attempt++) {
-    position = { x: 0.09 + Math.random() * 0.82, y: 0.16 + Math.random() * 0.68 };
-    if (existing.every((item) => Math.hypot((item.x - position.x) * 2.5, item.y - position.y) > 0.24))
-      break;
-  }
-  return position;
+function defaultPosition(existing: CounterPlacement[], attempt = 0): { x: number; y: number } {
+  const position = { x: 0.09 + Math.random() * 0.82, y: 0.16 + Math.random() * 0.68 };
+  const hasSpace = existing.every(
+    (item) => Math.hypot((item.x - position.x) * 2.5, item.y - position.y) > 0.24,
+  );
+  return hasSpace || attempt >= 39
+    ? position
+    : defaultPosition(existing, attempt + 1);
 }
 
 function newPlacement(
   ingredientId: string, existing: CounterPlacement[], position = defaultPosition(existing),
 ): CounterPlacement {
   const id = globalThis.crypto?.randomUUID?.()
-    ?? `counter-${Date.now().toString(36)}-${++placementSequence}`;
+    ?? nextFallbackPlacementId();
   return { id, ingredientId, x: clamp(position.x), y: clamp(position.y) };
+}
+
+function nextFallbackPlacementId() {
+  // Incrementing this private counter is required to keep fallback IDs unique
+  // in runtimes without crypto.randomUUID.
+  runtime.placementSequence += 1;
+  return `counter-${Date.now().toString(36)}-${runtime.placementSequence}`;
 }
 
 function restoreCounter(value: unknown): CounterPlacement[] {
@@ -55,7 +68,7 @@ function restoreCounter(value: unknown): CounterPlacement[] {
   });
 }
 
-export const getKitchenDemoSnapshot = () => snapshot;
+export const getKitchenDemoSnapshot = () => runtime.snapshot;
 export const getKitchenDemoServerSnapshot = () => initialSnapshot;
 export function subscribeKitchenDemo(listener: () => void) {
   listeners.add(listener);
@@ -63,11 +76,11 @@ export function subscribeKitchenDemo(listener: () => void) {
 }
 
 export function kitchenDemoForUser(userId: string | undefined): KitchenDemoState {
-  return userId ? snapshot[userId] ?? emptyState : emptyState;
+  return userId ? runtime.snapshot[userId] ?? emptyState : emptyState;
 }
 
 function publish(userId: string, next: KitchenDemoState) {
-  snapshot = { ...snapshot, [userId]: next };
+  runtime.snapshot = { ...runtime.snapshot, [userId]: next };
   try {
     localStorage.setItem(`ctk-kitchen-demo:${userId}`, JSON.stringify(next));
   } catch {
@@ -79,13 +92,8 @@ function publish(userId: string, next: KitchenDemoState) {
 // TODO(BACKEND): Replace local persistence with user-scoped counter and favorites
 // endpoints. Purchased inventory must remain server-owned.
 export function hydrateKitchenDemo(userId: string) {
-  if (snapshot[userId]) return;
-  let saved: Partial<KitchenDemoState> = {};
-  try {
-    saved = JSON.parse(localStorage.getItem(`ctk-kitchen-demo:${userId}`) ?? '{}') ?? {};
-  } catch {
-    // A malformed or unavailable cache starts empty.
-  }
+  if (runtime.snapshot[userId]) return;
+  const saved = readSavedKitchen(userId);
   const next: KitchenDemoState = {
     counter: restoreCounter(saved.counter),
     favorites: Array.isArray(saved.favorites)
@@ -93,6 +101,15 @@ export function hydrateKitchenDemo(userId: string) {
       : [],
   };
   publish(userId, next);
+}
+
+function readSavedKitchen(userId: string): Partial<KitchenDemoState> {
+  try {
+    return JSON.parse(localStorage.getItem(`ctk-kitchen-demo:${userId}`) ?? '{}') ?? {};
+  } catch {
+    // A malformed or unavailable cache starts empty.
+    return {};
+  }
 }
 
 function update(userId: string, transform: (current: KitchenDemoState) => KitchenDemoState) {
@@ -135,11 +152,10 @@ export function clearCounter(userId: string) {
 
 export function addMissingToCounter(userId: string, ingredientIds: string[], inventory: InventoryItem[]) {
   update(userId, (current) => {
-    let counter = current.counter;
-    for (const ingredientId of ingredientIds) {
-      if (!canPlaceOnCounter(inventory, aggregateCounter(counter), ingredientId)) continue;
-      counter = [...counter, newPlacement(ingredientId, counter)];
-    }
+    const counter = ingredientIds.reduce<CounterPlacement[]>((placed, ingredientId) =>
+      canPlaceOnCounter(inventory, aggregateCounter(placed), ingredientId)
+        ? [...placed, newPlacement(ingredientId, placed)]
+        : placed, current.counter);
     return { ...current, counter };
   });
 }

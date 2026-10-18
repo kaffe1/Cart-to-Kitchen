@@ -76,11 +76,14 @@ const initialState: DemoState = {
   history: [],
 };
 
-let state = initialState;
+// Isolated mutable storage for the useSyncExternalStore-compatible demo store.
+// Every update replaces the complete snapshot instead of mutating its fields.
+const runtime = { state: initialState };
+// Subscription membership is inherently lifecycle-driven and remains private.
 const listeners = new Set<() => void>();
 
 export function getDemoState(): DemoState {
-  return state;
+  return runtime.state;
 }
 
 export function getDemoServerState(): DemoState {
@@ -95,9 +98,9 @@ export function subscribeDemoState(listener: () => void): () => void {
 export function updateDemoState(
   updater: (current: DemoState) => DemoState,
 ): DemoState {
-  state = updater(state);
+  runtime.state = updater(runtime.state);
   listeners.forEach((listener) => listener());
-  return state;
+  return runtime.state;
 }
 
 export async function demoDelay(milliseconds = 260): Promise<void> {
@@ -105,7 +108,7 @@ export async function demoDelay(milliseconds = 260): Promise<void> {
 }
 
 export function resetDemoState(): void {
-  state = {
+  runtime.state = {
     ...initialState,
     cart: [],
     counter: [],

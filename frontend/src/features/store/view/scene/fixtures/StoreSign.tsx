@@ -29,6 +29,8 @@ export function StoreSign({
 }: StoreSignProps) {
   const texture = useMemo(() => {
     const canvas = document.createElement('canvas');
+    // Canvas and Three.js objects are configured through imperative APIs; all
+    // mutation here is local to a newly created texture.
     canvas.width = price ? 256 : 1024;
     canvas.height = Math.round((canvas.width * height) / width);
     const context = canvas.getContext('2d');
@@ -42,16 +44,16 @@ export function StoreSign({
     context.fillStyle = color;
     context.textBaseline = 'middle';
     context.textAlign = price ? 'left' : 'center';
-    let titleSize = price ? h * 0.52 : h * (subtitle ? 0.34 : 0.45);
+    const baseTitleSize = price ? h * 0.52 : h * (subtitle ? 0.34 : 0.45);
     if (price) {
       // Share a single baseline, reserving space for the full price on the right.
       const padding = w * 0.035;
       const gap = w * 0.035;
-      context.font = `600 ${titleSize}px Arial, sans-serif`;
+      context.font = `600 ${baseTitleSize}px Arial, sans-serif`;
       const titleWidth = context.measureText(title).width;
-      context.font = `700 ${titleSize}px Arial, sans-serif`;
+      context.font = `700 ${baseTitleSize}px Arial, sans-serif`;
       const priceWidth = context.measureText(price).width;
-      titleSize *= Math.min(
+      const titleSize = baseTitleSize * Math.min(
         1,
         (w - padding * 2 - gap) / (titleWidth + priceWidth),
       );
@@ -61,7 +63,7 @@ export function StoreSign({
       context.font = `700 ${titleSize}px Arial, sans-serif`;
       context.fillText(price, w - padding, h * 0.49);
     } else {
-      context.font = `600 ${titleSize}px Arial, sans-serif`;
+      context.font = `600 ${baseTitleSize}px Arial, sans-serif`;
       context.fillText(
         title,
         price ? w * 0.07 : w / 2,

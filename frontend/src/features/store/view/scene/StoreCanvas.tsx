@@ -44,7 +44,6 @@ export function StoreCanvas({
   const isExploring = mode === 'shopping';
   const controlsRef = useRef<LockControls>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
-  const flightSequence = useRef(0);
   const [flights, setFlights] = useState<CartFlight[]>([]);
   useImperativeHandle(
     ref,
@@ -87,7 +86,7 @@ export function StoreCanvas({
         setFlights((current) => [
           ...current,
           {
-            token: ++flightSequence.current,
+            token: crypto.randomUUID(),
             ingredient,
             kind: section.kind,
             target,
@@ -102,7 +101,7 @@ export function StoreCanvas({
     [onAdd, ingredients],
   );
   const finishFlight = useCallback(
-    (token: number) => {
+    (token: string) => {
       setFlights((current) =>
         current.filter((flight) => flight.token !== token),
       );

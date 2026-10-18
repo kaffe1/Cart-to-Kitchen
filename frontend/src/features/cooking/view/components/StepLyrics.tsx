@@ -7,6 +7,9 @@ export const STEP_INTERVAL_MS = 2000;
 export function StepLyrics({ steps }: { steps: string[] }) {
   const [active, setActive] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
+  // Timer, DOM-node and playback refs are intentionally mutable external
+  // handles. Keeping them out of render state prevents timer-driven rerenders
+  // and stale callback closures.
   const activeRef = useRef(0);
   const autoPlayingRef = useRef(true);
   const playbackTimerRef = useRef<number | null>(null);
@@ -81,13 +84,16 @@ export function StepLyrics({ steps }: { steps: string[] }) {
     const container = viewport.current;
     if (!container || autoPlayingRef.current) return;
     const center = container.scrollTop + container.clientHeight / 2;
-    let closest = 0;
-    let distance = Infinity;
-    items.current.forEach((item, index) => {
-      if (!item) return;
-      const next = Math.abs(item.offsetTop + item.clientHeight / 2 - center);
-      if (next < distance) { distance = next; closest = index; }
-    });
+    const { closest } = items.current.reduce(
+      (best, item, index) => {
+        if (!item) return best;
+        const distance = Math.abs(
+          item.offsetTop + item.clientHeight / 2 - center,
+        );
+        return distance < best.distance ? { closest: index, distance } : best;
+      },
+      { closest: 0, distance: Infinity },
+    );
     // Scrolling selects the displayed line without initiating another scroll.
     if (closest !== activeRef.current) {
       activeRef.current = closest;

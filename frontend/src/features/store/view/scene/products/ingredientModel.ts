@@ -17,14 +17,16 @@ export function prepareIngredientModel(
 ) {
   const object = source.clone(true);
   const materialCopies = new Map<Material, Material>();
+  // Three.js traversal mutates the private cloned scene and provides no
+  // immutable material-replacement API; the source GLTF remains untouched.
   object.traverse((node) => {
     if (!(node instanceof Mesh)) return;
     const copyMaterial = (material: Material) => {
-      let copy = materialCopies.get(material);
-      if (!copy) {
-        copy = material.clone();
-        materialCopies.set(material, copy);
-      }
+      const cached = materialCopies.get(material);
+      const copy = cached ?? material.clone();
+      // Three.js models and their material cache are imperative by design. The
+      // mutation stays inside model preparation and never touches React state.
+      if (!cached) materialCopies.set(material, copy);
       return copy;
     };
     node.material = Array.isArray(node.material)
@@ -58,6 +60,8 @@ export function prepareIngredientModel(
     material: Mesh['material'];
     matrix: Matrix4;
   }[] = [];
+  // traverse is callback-based, so this private append-only collection bridges
+  // its imperative API into the immutable model returned below.
   object.traverse((node) => {
     if (node instanceof Mesh)
       parts.push({

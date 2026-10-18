@@ -18,6 +18,8 @@ export function useCookingPresenter(recipeId: string) {
   const detail = useRecipePresenter(recipeId);
   const recipe = detail.recipe;
   const navigate = useNavigate();
+  // This ref is an imperative re-entry lock across awaited work; state alone
+  // would not synchronously block two clicks in the same render frame.
   const busy = useRef(false);
   const [isFinishing, setIsFinishing] = useState(false);
   const [finishError, setFinishError] = useState<string | null>(null);

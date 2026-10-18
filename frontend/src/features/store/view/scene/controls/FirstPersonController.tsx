@@ -32,6 +32,8 @@ interface FirstPersonControllerProps {
 }
 
 export function FirstPersonController({ enabled }: FirstPersonControllerProps) {
+  // React refs and Three.js vectors/camera transforms are mutated intentionally:
+  // frame-loop state must update without causing 60 React renders per second.
   const movement = useRef<MovementState>(createMovementState());
   const forward = useRef(new Vector3());
   const right = useRef(new Vector3());

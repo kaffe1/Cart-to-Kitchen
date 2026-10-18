@@ -25,29 +25,30 @@ const ROOM: StoreBox[] = [
   { position: [0, 3.23, 9], size: [3.6, 0.75, 0.2], color: '#344c43' },
   { position: [-1.8, 1.45, 8.88], size: [0.07, 2.9, 0.08], color: '#344c43' },
   { position: [1.8, 1.45, 8.88], size: [0.07, 2.9, 0.08], color: '#344c43' },
-];
-for (const z of [-6, 0, 6])
-  ROOM.push({
+  ...[-6, 0, 6].map<StoreBox>((z) => ({
     position: [0, 3.52, z],
     size: [16, 0.14, 0.16],
     color: '#d6d3c7',
     blocking: false,
-  });
+  })),
+];
 
 function TileFloor() {
   const texture = useMemo(() => {
     const canvas = document.createElement('canvas');
+    // Canvas and Three.js expose imperative configuration APIs. These
+    // mutations are confined to creation of objects owned by this effect.
     canvas.width = canvas.height = 512;
     const context = canvas.getContext('2d');
     if (!context) throw new Error('Could not create the floor texture');
     context.fillStyle = '#c9c7bd';
     context.fillRect(0, 0, 512, 512);
-    for (let x = 0; x < 2; x++)
-      for (let y = 0; y < 2; y++) {
+    for (const x of [0, 1])
+      for (const y of [0, 1]) {
         context.fillStyle = (x + y) % 2 ? '#e2dfd6' : '#ddd9cf';
         context.fillRect(x * 256 + 1, y * 256 + 1, 254, 254);
       }
-    for (let i = 0; i < 2200; i++) {
+    for (const i of Array.from({ length: 2200 }, (_, index) => index)) {
       context.fillStyle = i % 2 ? '#b9b5aa28' : '#fffdf02c';
       context.fillRect(
         (i * 137) % 512,

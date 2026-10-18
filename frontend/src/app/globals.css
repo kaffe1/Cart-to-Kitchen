@@ -223,7 +223,7 @@ a { color: inherit; text-decoration: none; }
 .ingredient-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .ingredient-card { min-width: 0; display: grid; gap: 11px; padding: 14px; border: 1px solid var(--border); border-radius: 19px; background: white; transition: transform 160ms ease, box-shadow 160ms ease; }
 .ingredient-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgb(25 37 32 / 9%); }
-.ingredient-card-main { min-width: 0; display: flex; align-items: center; gap: 10px; padding: 0; border: 0; text-align: left; background: transparent; cursor: pointer; }
+.ingredient-card-main { min-width: 0; display: flex; align-items: center; gap: 10px; padding: 0; border: 0; text-align: left; background: transparent; }
 .ingredient-emoji { flex: none; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 15px; font-size: 1.7rem; }
 .ingredient-copy { min-width: 0; display: grid; }
 .ingredient-copy strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.92rem; }
@@ -579,7 +579,15 @@ a { color: inherit; text-decoration: none; }
 .profile-review-photo-placeholder { display: grid; place-content: center; justify-items: center; gap: 6px; padding: 12px; border: 1px dashed #b9c6bb; color: var(--muted-foreground); text-align: center; background: #f2f4ec; font-size: .72rem; }
 .profile-review-photo-placeholder svg { width: 25px; color: var(--basil); }
 .profile-review-copy { min-width: 0; display: flex; flex-direction: column; }
-.profile-review-copy > p { margin: 0; color: #3e4945; font-size: .84rem; line-height: 1.65; white-space: pre-wrap; }
+.profile-review-rich-text { color: #3e4945; font-size: .84rem; line-height: 1.65; overflow-wrap: anywhere; }
+.profile-review-rich-text > :first-child { margin-top: 0; }
+.profile-review-rich-text > :last-child { margin-bottom: 0; }
+.profile-review-rich-text p { margin: 0 0 .65em; white-space: pre-wrap; }
+.profile-review-rich-text strong { color: var(--ink); font-weight: 800; }
+.profile-review-rich-text em { font-style: italic; }
+.profile-review-rich-text u { text-decoration-thickness: .09em; text-underline-offset: .16em; }
+.profile-review-rich-text ul, .profile-review-rich-text ol { margin: .4em 0 .65em; padding-left: 1.35em; }
+.profile-review-rich-text blockquote { margin: .55em 0; padding-left: .8em; border-left: 3px solid var(--sage); color: var(--muted-foreground); }
 .profile-review-copy label { margin-bottom: 6px; font-size: .76rem; font-weight: 800; }
 .profile-review-copy textarea { width: 100%; min-height: 126px; resize: vertical; padding: 11px 12px; border: 1px solid var(--input); border-radius: 13px; color: var(--foreground); background: white; outline: none; font: inherit; font-size: .82rem; }
 .profile-review-copy textarea:focus { border-color: var(--ring); box-shadow: 0 0 0 3px rgb(229 72 44 / 12%); }

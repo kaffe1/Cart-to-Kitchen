@@ -22,6 +22,9 @@ export function FlyingIngredient({
   target,
   onComplete,
 }: FlyingIngredientProps) {
+  // Animation refs and Three.js scene objects are deliberately updated in
+  // place each frame; immutable replacement would break object identity and
+  // force React reconciliation at animation frequency.
   const display = useMemo(
     () => getProductDisplay(ingredient.id, kind),
     [ingredient.id, kind],
