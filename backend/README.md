@@ -124,7 +124,7 @@ All application routes are prefixed with `/api/v1`.
 | POST | `/api/v1/auth/login` | Sign in |
 | POST | `/api/v1/auth/guest` | Create an anonymous guest session |
 | POST | `/api/v1/auth/logout` | Clear the session cookie |
-| GET | `/api/v1/auth/me` | Return the current user |
+| GET | `/api/v1/auth/me` | Return the current user, or `{ "user": null }` when signed out |
 | GET | `/api/v1/ingredients` | Return 80 sellable and 30 pantry ingredients |
 | GET | `/api/v1/shopping-sessions/active` | Return wallet, cart, and inventory state |
 | PUT | `/api/v1/shopping-sessions/{id}/items/{ingredientId}` | Set a cart quantity; zero removes it |

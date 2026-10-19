@@ -76,8 +76,9 @@ def search(query: str) -> list[dict]:
 
 def detail(meal_id: str) -> dict | None:
     """One meal with instructions and the ingredient/measure list."""
-    meals = _get("lookup.php", {"i": meal_id}).get("meals") or []
-    if not meals:
+    meals = _get("lookup.php", {"i": meal_id}).get("meals")
+    # TheMealDB answers malformed IDs with {"meals": "Invalid ID"}.
+    if not isinstance(meals, list) or not meals:
         return None
     m = meals[0]
     return {

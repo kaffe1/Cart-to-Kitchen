@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import type { Ingredient } from '../../model/store.types';
+import { configurePointerLock } from './controls/pointerLockLifecycle';
 import type { ShoppingMode } from './controls/shoppingSession';
 import { STORE_CAMERA_FOV } from './layout/storeAppearance';
 import { STORE_ENTRANCE, STORE_SECTIONS } from './layout/storeLayout';
@@ -46,10 +47,18 @@ export function StoreCanvas({
   const controlsRef = useRef<LockControls>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const [flights, setFlights] = useState<CartFlight[]>([]);
+  const [isLockDenied, setIsLockDenied] = useState(false);
+  const attachControls = useCallback((controls: LockControls | null) => {
+    controlsRef.current = controls;
+    if (controls) configurePointerLock(controls, () => setIsLockDenied(true));
+  }, []);
   useImperativeHandle(
     ref,
     () => ({
-      resumeShopping: () => controlsRef.current?.lock(),
+      resumeShopping: () => {
+        setIsLockDenied(false);
+        controlsRef.current?.lock();
+      },
       pauseShopping: () => controlsRef.current?.unlock(),
     }),
     [],
@@ -151,7 +160,7 @@ export function StoreCanvas({
             onFocusChange={setFocusedId}
             onExplorationStart={startExploring}
             onExplorationEnd={stopExploring}
-            controlsRef={controlsRef}
+            controlsRef={attachControls}
             flights={flights}
             onFlightComplete={finishFlight}
           />
@@ -202,12 +211,14 @@ export function StoreCanvas({
         </output>
       )}
       {isExploring && <div className="store-crosshair" aria-hidden="true" />}
-      <div className="canvas-help">
+      <div className="canvas-help" aria-live="polite">
         {isExploring
           ? 'WASD move · Click add · B / ESC basket'
-          : mode === 'paused'
-            ? 'B or click the store to continue'
-            : 'Enter first-person mode to explore'}
+          : isLockDenied
+            ? 'The browser blocked mouse look. Wait a moment, then try again.'
+            : mode === 'paused'
+              ? 'B or click the store to continue'
+              : 'Enter first-person mode to explore'}
       </div>
     </div>
   );

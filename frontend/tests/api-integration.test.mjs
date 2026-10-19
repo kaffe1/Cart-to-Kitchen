@@ -35,11 +35,7 @@ function backend(overrides = {}) {
   const request = async (path, init = {}) => {
     data.calls.push({ path, ...init });
     if (data.before) await data.before(path, init);
-    if (path === '/auth/me') {
-      if (!data.user)
-        throw new ApiError('sign in to continue', 'auth_required', 401);
-      return { user: structuredClone(data.user) };
-    }
+    if (path === '/auth/me') return { user: structuredClone(data.user) };
     if (['/auth/guest', '/auth/login', '/auth/register'].includes(path)) {
       data.user = user(
         path === '/auth/guest' ? '1' : '2',
@@ -374,6 +370,23 @@ test('HTTP cookies, 204, business/validation errors, HTML errors and offline han
     code: 'NETWORK_ERROR',
     status: 0,
   });
+});
+
+test('a signed-out session probe is ready without a user, including legacy 401 replies', async () => {
+  const { session } = backend();
+  await session.initialize();
+  assert.equal(session.getSnapshot().status, 'ready');
+  assert.equal(session.getSnapshot().user, null);
+
+  const legacy = backend({
+    before: (path) => {
+      if (path === '/auth/me')
+        throw new ApiError('sign in to continue', 'auth_required', 401);
+    },
+  });
+  await legacy.session.initialize();
+  assert.equal(legacy.session.getSnapshot().status, 'ready');
+  assert.equal(legacy.session.getSnapshot().user, null);
 });
 
 test('refresh waits for pending cart writes and deduplicates repeated reads', async () => {
