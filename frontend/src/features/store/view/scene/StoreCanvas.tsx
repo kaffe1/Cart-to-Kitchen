@@ -15,6 +15,7 @@ import { STORE_CAMERA_FOV } from './layout/storeAppearance';
 import { STORE_ENTRANCE, STORE_SECTIONS } from './layout/storeLayout';
 import { MarketScene, type LockControls } from './MarketScene';
 import type { CartFlight } from './products/cartFlight';
+import { configureRendererDisposal } from './rendererLifecycle';
 
 interface StoreCanvasProps {
   ref?: Ref<StoreCanvasHandle>;
@@ -136,7 +137,10 @@ export function StoreCanvas({
             near: 0.06,
             far: 45,
           }}
-          onCreated={({ camera }) => camera.lookAt(0, 1.3, -2)}
+          onCreated={({ camera, gl }) => {
+            configureRendererDisposal(gl);
+            camera.lookAt(0, 1.3, -2);
+          }}
         >
           <MarketScene
             ingredients={ingredients}

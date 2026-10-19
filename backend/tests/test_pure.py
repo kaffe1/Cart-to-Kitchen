@@ -3,16 +3,30 @@ live HTTP (clock and inventory state are not controllable there). All HTTP
 behaviour is covered by the Postman collection — see README."""
 
 from datetime import UTC, datetime
+from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
 from app.profanity import MAX_REVIEW_TEXT_LENGTH, PATTERN, check_review
-from app.services.recipe_service import match_tiers
+from app.services.recipe_service import history_public, match_tiers
 from app.services.wallet_service import grants_between, next_grant_at
 from app.errors import RuleValidation
 
 import pytest
 
 STOCKHOLM = ZoneInfo("Europe/Stockholm")
+
+
+def test_history_timestamp_is_explicitly_serialized_as_utc():
+    entry = SimpleNamespace(
+        id=1,
+        meal_id="recipe-1",
+        meal_name="Test meal",
+        cooked_at=datetime(2026, 10, 19, 12, 30),
+        review_text=None,
+        review_image=None,
+    )
+
+    assert history_public(entry)["cookedAt"] == "2026-10-19T12:30:00+00:00"
 
 
 # --- wallet grant math --------------------------------------------------------

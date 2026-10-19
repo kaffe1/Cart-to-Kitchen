@@ -8,6 +8,9 @@ import {
   Mesh,
   MeshStandardMaterial,
   Vector3,
+  getConsoleFunction,
+  log,
+  setConsoleFunction,
 } from 'three';
 import { storeIngredients } from '../src/shared/api/dummyData.ts';
 import {
@@ -42,6 +45,31 @@ import {
   shoppingSessionReducer,
 } from '../src/features/store/view/scene/controls/shoppingSession.ts';
 import { getCartFlightFrame } from '../src/features/store/view/scene/products/cartFlight.ts';
+import { configureRendererDisposal } from '../src/features/store/view/scene/rendererLifecycle.ts';
+
+test('intentional renderer disposal does not emit a context-lost log', () => {
+  const messages = [];
+  const previousConsoleFunction = getConsoleFunction();
+  setConsoleFunction((...message) => messages.push(message));
+  try {
+    const canvas = new EventTarget();
+    canvas.addEventListener('webglcontextlost', () =>
+      log('WebGLRenderer: Context Lost.'),
+    );
+    const renderer = {
+      domElement: canvas,
+      forceContextLoss: () =>
+        canvas.dispatchEvent(new Event('webglcontextlost')),
+    };
+    configureRendererDisposal(renderer);
+    renderer.forceContextLoss();
+    log('Test message');
+
+    assert.deepEqual(messages, [['log', 'THREE.Test message']]);
+  } finally {
+    setConsoleFunction(previousConsoleFunction);
+  }
+});
 
 test('a picked ingredient follows an upward arc to the basket while shrinking', () => {
   const target = [0.88, 0.91];
