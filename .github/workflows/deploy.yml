@@ -5,6 +5,7 @@ on:
   workflow_dispatch: {}
 jobs:
   deploy:
+    if: github.repository == 'kaffe1/Cart-to-Kitchen'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
