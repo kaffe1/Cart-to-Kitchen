@@ -1,0 +1,36 @@
+name: deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+jobs:
+  deploy:
+    if: github.repository == 'kaffe1/Cart-to-Kitchen'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: sync fork main (triggers the Vercel frontend deploy)
+        env:
+          FORK_SYNC_TOKEN: ${{ secrets.FORK_SYNC_TOKEN }}
+        run: |
+          git config --global --unset-all http.https://github.com/.extraheader || true
+          git config --local --unset-all http.https://github.com/.extraheader || true
+          git config user.name "deploy-bot"
+          git config user.email "deploy-bot@users.noreply.github.com"
+          git remote add fork https://x-access-token:${FORK_SYNC_TOKEN}@github.com/zlxdengtianhei/Cart-to-Kitchen.git
+          git push fork HEAD:main
+      - name: rsync backend and rebuild the Docker stack
+        env:
+          KEY: ${{ secrets.DEPLOY_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          install -m 600 /dev/null key
+          echo "$KEY" > key
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          rsync -az --delete -e "ssh -i key" --exclude '.venv' --exclude '__pycache__' --exclude '.pytest_cache' --exclude 'postman' --exclude '.env' --exclude 'compose.override.yaml' backend/ "$DEPLOY_USER@$DEPLOY_HOST:/opt/cart-to-kitchen/"
+          ssh -i key "$DEPLOY_USER@$DEPLOY_HOST" "cd /opt/cart-to-kitchen && docker-compose up -d --build"
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
