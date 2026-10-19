@@ -17,6 +17,7 @@ import { messageForApiError } from "@/shared/api/errorMessage";
 import { Button } from "@/shared/components/ui/button";
 import { formatShortDate } from "@/shared/utils/format";
 import { TextEditor } from "@/shared/components/ui/TextEditor";
+import { TextView } from "@/shared/components/ui/TextView";
 
 type HistoryReviewCardProps = {
   recipe: CookedRecipe & { cookedAt?: string };
@@ -188,7 +189,7 @@ export function HistoryReviewCard({
                   <small>{draftText.length}/2000</small>
                 </>
               ) : recipe.review ? (
-                <p>{recipe.review}</p>
+                <TextView key={recipe.review} html={recipe.review}/>
               ) : (
                 <div className="profile-review-placeholder">
                   <strong>No review written yet</strong>
