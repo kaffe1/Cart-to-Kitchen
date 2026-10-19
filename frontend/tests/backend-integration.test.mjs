@@ -50,7 +50,9 @@ test(
       'true',
     );
     const catalogue = await requestJson('/ingredients');
-    assert.equal(catalogue.length, 80);
+    assert.equal(catalogue.length, 110);
+    assert.equal(catalogue.filter((ingredient) => ingredient.isPantry).length, 30);
+    assert.equal(catalogue.filter((ingredient) => !ingredient.isPantry).length, 80);
     const session = createAppSession();
     await session.ensureShoppingSession();
     const guestId = session.getSnapshot().user.id;
