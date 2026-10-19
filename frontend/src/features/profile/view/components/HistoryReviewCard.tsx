@@ -11,13 +11,15 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import type { CookedRecipe } from "../../model/profile.types";
 import {
   IMAGE_ACCEPT,
+  MAX_REVIEW_TEXT_LENGTH,
   validateImageFile,
+  validateReview,
 } from "../../model/profile.validation";
 import { messageForApiError } from "@/shared/api/errorMessage";
 import { Button } from "@/shared/components/ui/button";
 import { formatShortDate } from "@/shared/utils/format";
 import { TextEditor } from "@/shared/components/ui/TextEditor";
-import { TextView } from "@/shared/components/ui/TextView";
+import { RichText } from "@/shared/components/ui/RichText";
 
 type HistoryReviewCardProps = {
   recipe: CookedRecipe & { cookedAt?: string };
@@ -40,6 +42,7 @@ export function HistoryReviewCard({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const reviewValidationError = validateReview(draftHtml, draftText);
 
   useEffect(
     () => () => {
@@ -59,6 +62,8 @@ export function HistoryReviewCard({
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    // File inputs expose reset as an imperative DOM operation; clearing it
+    // allows the same file to trigger a later change event.
     event.target.value = "";
     if (!file) return;
     const validationError = validateImageFile(file);
@@ -72,8 +77,9 @@ export function HistoryReviewCard({
   };
 
   const handleSave = async () => {
-    if (!draftText.trim()) {
-      setError("Write a short review before saving.");
+    const validationError = validateReview(draftHtml, draftText);
+    if (validationError) {
+      setError(validationError);
       return;
     }
     setError(null);
@@ -90,6 +96,8 @@ export function HistoryReviewCard({
           {
             PROFANITY_REJECTED:
               "The review contains words that are not allowed",
+            REVIEW_EMPTY: "Write a short review before saving.",
+            REVIEW_TOO_LONG: `The review must be ${MAX_REVIEW_TEXT_LENGTH} characters or fewer`,
             rule_validation:
               "Check the review text and make sure the image is PNG, JPEG or WebP and under 2 MB.",
           },
@@ -186,10 +194,15 @@ export function HistoryReviewCard({
                       setDraftText(plainText);
                     }}
                   />
-                  <small>{draftText.length}/2000</small>
+                  <small>
+                    {draftText.length}/{MAX_REVIEW_TEXT_LENGTH}
+                  </small>
                 </>
               ) : recipe.review ? (
-                <TextView key={recipe.review} html={recipe.review}/>
+                <RichText
+                  html={recipe.review}
+                  className="profile-review-rich-text"
+                />
               ) : (
                 <div className="profile-review-placeholder">
                   <strong>No review written yet</strong>
@@ -199,9 +212,9 @@ export function HistoryReviewCard({
             </div>
           </div>
 
-          {error && (
+          {(error || (isEditing && reviewValidationError)) && (
             <p className="profile-review-error" role="alert">
-              {error}
+              {error ?? reviewValidationError}
             </p>
           )}
 
@@ -221,7 +234,7 @@ export function HistoryReviewCard({
                   type="button"
                   size="sm"
                   onClick={() => void handleSave()}
-                  disabled={!draftText.trim() || isSaving}
+                  disabled={!!reviewValidationError || isSaving}
                 >
                   <Save size={16} /> {isSaving ? "Saving…" : "Save review"}
                 </Button>

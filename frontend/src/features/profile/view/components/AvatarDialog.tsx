@@ -46,6 +46,8 @@ export function AvatarDialog({
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const chosenFile = event.target.files?.[0];
+    // Browsers only allow a file input to be reset through its mutable DOM
+    // value (or by replacing the whole element). Resetting enables reselecting.
     event.target.value = "";
     if (!chosenFile) {
       return;

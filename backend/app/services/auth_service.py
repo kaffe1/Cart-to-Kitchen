@@ -71,5 +71,8 @@ def guest(db: Session, settings: Settings) -> dict:
     return {"user": user_public(user), "accessToken": issue_token(user, settings)}
 
 
-def me(db: Session, user_id: int) -> dict:
+def me(db: Session, user_id: int | None) -> dict:
+    # A signed-out visitor is a normal state for the session probe, not an error.
+    if user_id is None:
+        return {"user": None}
     return {"user": user_public(UserRepository(db).by_id(user_id), has_avatar=_has_avatar(db, user_id))}

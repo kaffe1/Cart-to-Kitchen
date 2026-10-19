@@ -3,16 +3,30 @@ live HTTP (clock and inventory state are not controllable there). All HTTP
 behaviour is covered by the Postman collection — see README."""
 
 from datetime import UTC, datetime
+from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
-from app.profanity import PATTERN, check_review
-from app.services.recipe_service import match_tiers
+from app.profanity import MAX_REVIEW_TEXT_LENGTH, PATTERN, check_review
+from app.services.recipe_service import history_public, match_tiers
 from app.services.wallet_service import grants_between, next_grant_at
 from app.errors import RuleValidation
 
 import pytest
 
 STOCKHOLM = ZoneInfo("Europe/Stockholm")
+
+
+def test_history_timestamp_is_explicitly_serialized_as_utc():
+    entry = SimpleNamespace(
+        id=1,
+        meal_id="recipe-1",
+        meal_name="Test meal",
+        cooked_at=datetime(2026, 10, 19, 12, 30),
+        review_text=None,
+        review_image=None,
+    )
+
+    assert history_public(entry)["cookedAt"] == "2026-10-19T12:30:00+00:00"
 
 
 # --- wallet grant math --------------------------------------------------------
@@ -66,3 +80,16 @@ def test_profanity_rejects_listed_words_not_substrings():
 def test_profanity_pattern_word_boundaries():
     assert PATTERN.search("what a damn joke")
     assert not PATTERN.search("hellfire")
+
+
+def test_review_length_counts_visible_text_instead_of_html_tags():
+    check_review(f"<p><strong>{'a' * MAX_REVIEW_TEXT_LENGTH}</strong></p>")
+    with pytest.raises(RuleValidation) as error:
+        check_review(f"<p>{'a' * (MAX_REVIEW_TEXT_LENGTH + 1)}</p>")
+    assert error.value.details == {"code": "REVIEW_TOO_LONG"}
+
+
+def test_review_rejects_markup_without_visible_text():
+    with pytest.raises(RuleValidation) as error:
+        check_review("<p><strong></strong></p>")
+    assert error.value.details == {"code": "REVIEW_EMPTY"}

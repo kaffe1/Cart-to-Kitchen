@@ -83,9 +83,9 @@ describe('Kitchen → MealDB recipe → completed meal', () => {
       expect(req.body).to.deep.equal({ ingredientIds: ['tomato'] });
       req.reply([recipe]);
     }).as('discover');
-    let completions = 0;
+    const completion = cy.stub().as('completionRequest');
     cy.intercept('POST', '**/api/v1/recipes/52771/cook', (req) => {
-      completions++;
+      completion();
       expect(req.headers['idempotency-key']).to.be.a('string');
       req.reply({ id: 7, recipeId: recipe.id, name: recipe.name, cookedAt: '', completedCount: 2 });
     }).as('finish');
@@ -109,14 +109,14 @@ describe('Kitchen → MealDB recipe → completed meal', () => {
     cy.get('.finished-count').should('contain', '#2');
     cy.get('.finished-photo').should('have.attr', 'src', recipe.imageUrl);
     cy.get('.finished-ingredients').should('contain', 'Tomato');
-    cy.then(() => expect(completions).to.equal(1));
+    cy.get('@completionRequest').should('have.been.calledOnce');
     cy.screenshot('cooking-finished');
     cy.contains('a', 'Back to kitchen').click();
     cy.get('.counter-emoji').should('not.exist');
     cy.get('.match-board').should('not.exist');
     cy.mount(<Journey path="/cooking-finished/7" />);
     cy.get('.finished-count').should('contain', '#2');
-    cy.then(() => expect(completions).to.equal(1));
+    cy.get('@completionRequest').should('have.been.calledOnce');
   });
 
   it('shows a discovery error and retries without replacing results with demo recipes', () => {
@@ -181,15 +181,13 @@ describe('Kitchen → MealDB recipe → completed meal', () => {
   it('keeps the same completion key after a failed response and renders on mobile', () => {
     cy.viewport(390, 844);
     cy.then(() => { addIngredientToCounter(user.id, 'tomato', inventory); addIngredientToCounter(user.id, 'garlic', inventory); });
-    let key: unknown;
-    let attempts = 0;
+    const finishAttempt = cy.stub().as('finishAttempt');
     cy.intercept('POST', '**/api/v1/recipes/52771/cook', (req) => {
-      attempts++;
-      if (attempts === 1) {
-        key = req.headers['idempotency-key'];
+      finishAttempt(req.headers['idempotency-key']);
+      if (finishAttempt.callCount === 1) {
         req.reply({ statusCode: 502, body: { error: { message: 'Please retry your completion' } } });
       } else {
-        expect(req.headers['idempotency-key']).to.equal(key);
+        expect(req.headers['idempotency-key']).to.equal(finishAttempt.firstCall.args[0]);
         req.reply({ id: 7, recipeId: recipe.id, name: recipe.name, cookedAt: '', completedCount: 1 });
       }
     });

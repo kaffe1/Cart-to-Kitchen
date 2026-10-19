@@ -7,13 +7,11 @@ const SCREEN_CENTER = new Vector2(0, 0);
 const INTERACTION_DISTANCE = 3.2;
 
 function findIngredientId(object: Object3D | null): string | null {
-  let candidate = object;
-  while (candidate) {
-    const ingredientId = candidate.userData.ingredientId;
-    if (typeof ingredientId === 'string') return ingredientId;
-    candidate = candidate.parent;
-  }
-  return null;
+  if (!object) return null;
+  const ingredientId = object.userData.ingredientId;
+  return typeof ingredientId === 'string'
+    ? ingredientId
+    : findIngredientId(object.parent);
 }
 
 interface ProductInteractionControllerProps {
@@ -29,6 +27,8 @@ export function ProductInteractionController({
   onFocusChange,
   onAdd,
 }: ProductInteractionControllerProps) {
+  // Raycasting runs every frame. Reusing mutable Three.js objects and refs
+  // avoids allocations and React renders while keeping mutations local.
   const raycaster = useRef(new Raycaster());
   const lastFocusedId = useRef<string | null>(null);
   const intersections = useRef<Intersection[]>([]);

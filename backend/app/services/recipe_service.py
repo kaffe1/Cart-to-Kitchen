@@ -8,6 +8,7 @@ requiring anything outside the supported 110 ingredients cannot be cooked.
 """
 
 from __future__ import annotations
+from datetime import UTC
 import re
 
 from sqlalchemy.orm import Session
@@ -323,11 +324,19 @@ def cook(db: Session, user: User, meal_id: str, request_key: str | None = None) 
 
 
 def history_public(entry) -> dict:
+    # Database timestamps are stored as naive UTC.  Attach the UTC offset at
+    # the API boundary so browsers do not mistake the value for local time.
+    cooked_at = entry.cooked_at
+    if cooked_at.tzinfo is None:
+        cooked_at = cooked_at.replace(tzinfo=UTC)
+    else:
+        cooked_at = cooked_at.astimezone(UTC)
+
     return {
         "id": entry.id,
         "recipeId": entry.meal_id,
         "name": entry.meal_name,
-        "cookedAt": entry.cooked_at.isoformat(),
+        "cookedAt": cooked_at.isoformat(),
         "review": entry.review_text,
         "reviewImageUrl": (
             f"/api/v1/history/{entry.id}/image" if entry.review_image else None

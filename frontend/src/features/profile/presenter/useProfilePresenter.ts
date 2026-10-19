@@ -9,6 +9,7 @@ import {
   saveReview,
 } from "../model/profile.api";
 import { ApiError } from "@/shared/api/apiError";
+import { appSession } from "@/shared/api/appSession";
 
 export function useProfilePresenter() {
   const [isDisplayNameDialogOpen, setDisplayNameDialogOpen] = useState(false);
@@ -18,11 +19,16 @@ export function useProfilePresenter() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
+    const controller = new AbortController();
     getProfile()
-      .then(setProfile)
+      .then((loadedProfile) => {
+        if (!controller.signal.aborted) setProfile(loadedProfile);
+      })
       .catch((error: unknown) => {
+        if (controller.signal.aborted) return;
         const isSessionError =
           error instanceof ApiError &&
           (error.code === "invalid_session" || error.code === "auth_required");
@@ -31,9 +37,11 @@ export function useProfilePresenter() {
         }
       })
       .finally(() => {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       });
-  }, []);
+    // AbortController is the platform's intentionally mutable lifecycle signal.
+    return () => controller.abort();
+  }, [loadAttempt]);
 
   const isGuestUser =
     !isLoading && !loadError && (profile === null || profile.mode === "guest");
@@ -74,8 +82,10 @@ export function useProfilePresenter() {
   };
 
   const handleDisplayNameSave = async (newDisplayName: string) => {
+    const userId = appSession.getSnapshot().user?.id;
     await updateDisplayName(newDisplayName);
     patchProfile({ displayName: newDisplayName });
+    if (userId) appSession.patchUser(userId, { displayName: newDisplayName });
     closeDisplayNameDialog();
   };
 
@@ -110,6 +120,12 @@ export function useProfilePresenter() {
           ),} : prev,);
   };
 
+  const retryProfile = () => {
+    setIsLoading(true);
+    setLoadError(null);
+    setLoadAttempt((attempt) => attempt + 1);
+  };
+
   return {
     profile,
     isGuestUser,
@@ -132,5 +148,6 @@ export function useProfilePresenter() {
     handleReviewSave,
     isLoading,
     loadError,
+    retryProfile,
   };
 }

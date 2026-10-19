@@ -7,7 +7,6 @@ import { formatSek } from '@/shared/utils/format';
 interface IngredientCardProps {
   ingredient: Ingredient;
   onAdd: (ingredientId: string) => void;
-  onSelect?: (ingredientId: string) => void;
   compact?: boolean;
   disabled?: boolean;
 }
@@ -15,7 +14,6 @@ interface IngredientCardProps {
 export function IngredientCard({
   ingredient,
   onAdd,
-  onSelect,
   compact,
   disabled,
 }: IngredientCardProps) {
@@ -23,12 +21,7 @@ export function IngredientCard({
     <article
       className={compact ? 'ingredient-card compact' : 'ingredient-card'}
     >
-      <button
-        type="button"
-        className="ingredient-card-main"
-        onClick={() => onSelect?.(ingredient.id)}
-        aria-label={`View ${ingredient.name}`}
-      >
+      <div className="ingredient-card-main">
         <span
           className="ingredient-emoji"
           style={{ backgroundColor: `${ingredient.color}22` }}
@@ -39,7 +32,7 @@ export function IngredientCard({
           <strong>{ingredient.name}</strong>
           <small>{ingredient.category}</small>
         </span>
-      </button>
+      </div>
       <div className="ingredient-meta">
         <Badge variant="outline">{ingredient.usesPerUnit} uses</Badge>
         <strong>{formatSek(ingredient.priceSek)}</strong>

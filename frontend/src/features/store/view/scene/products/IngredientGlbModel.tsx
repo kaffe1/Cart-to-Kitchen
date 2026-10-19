@@ -41,6 +41,8 @@ function ModelInstances({
   copies: readonly DisplayCopy[];
   animatedScale: RefObject<number>;
 }) {
+  // Three.js requires in-place InstancedMesh buffer updates. Mutable refs keep
+  // per-frame animation state outside React's immutable render state.
   const ref = useRef<InstancedMesh>(null);
   const lastScale = useRef(1);
   const placements = useMemo(
@@ -113,6 +115,7 @@ export function IngredientGlbModel({
   display: ProductDisplay;
   feedbackSequence: number;
 }) {
+  // These refs are the private state of the render loop, not application data.
   const url = getIngredientModelUrl(ingredient);
   const { scene } = useGLTF(url, false, false);
   const model = useMemo(

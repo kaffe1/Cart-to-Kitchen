@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from ..config import Settings, get_settings
 from ..schemas import LoginInput, RegisterInput
 from ..services import auth_service
-from .deps import get_current_user, get_db
+from .deps import get_db, get_optional_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -18,7 +18,8 @@ def _set_session_cookie(response: Response, token: str, settings: Settings) -> N
         key=settings.session_cookie,
         value=token,
         httponly=True,
-        samesite="lax",
+        samesite=settings.cookie_samesite,
+        secure=settings.cookie_secure,
         max_age=settings.session_hours * 3600,
         path="/",
     )
@@ -71,5 +72,5 @@ def logout(response: Response, settings: Settings = Depends(get_settings)):
 
 
 @router.get("/me")
-def me(user=Depends(get_current_user), db: Session = Depends(get_db)):
-    return auth_service.me(db, user.id)
+def me(user=Depends(get_optional_user), db: Session = Depends(get_db)):
+    return auth_service.me(db, user.id if user else None)

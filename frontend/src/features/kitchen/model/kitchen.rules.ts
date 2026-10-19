@@ -5,10 +5,17 @@ import type { CounterItem, CounterPlacement, InventoryItem, RecipeMatch, RecipeM
 const pantryIds = new Set(pantryIngredients.map((item) => item.id));
 
 export function aggregateCounter(placements: CounterPlacement[]): CounterItem[] {
-  const counts = new Map<string, number>();
-  for (const { ingredientId } of placements)
-    counts.set(ingredientId, (counts.get(ingredientId) ?? 0) + 1);
-  return [...counts].map(([ingredientId, selectedUses]) => ({ ingredientId, selectedUses }));
+  const counts = placements.reduce<Record<string, number>>(
+    (current, { ingredientId }) => ({
+      ...current,
+      [ingredientId]: (current[ingredientId] ?? 0) + 1,
+    }),
+    {},
+  );
+  return Object.entries(counts).map(([ingredientId, selectedUses]) => ({
+    ingredientId,
+    selectedUses,
+  }));
 }
 
 export function availableUses(inventory: InventoryItem[], ingredientId: string): number {
@@ -55,10 +62,21 @@ export function matchRecipes(
     || b.matchedCount - a.matchedCount
     || a.missingFromInventory.length - b.missingFromInventory.length
     || a.recipe.name.localeCompare(b.recipe.name);
+  const sorted = (availability: RecipeMatch['availability']) =>
+    results
+      .filter((item) => item.availability === availability)
+      .reduce<RecipeMatch[]>((ordered, item) => {
+        const index = ordered.findIndex(
+          (candidate) => sortMatches(item, candidate) < 0,
+        );
+        return index < 0
+          ? [...ordered, item]
+          : [...ordered.slice(0, index), item, ...ordered.slice(index)];
+      }, []);
   return {
-    readyNow: results.filter((item) => item.availability === 'ready_now').sort(sortMatches),
-    almostReady: results.filter((item) => item.availability === 'almost_ready').sort(sortMatches),
-    needShopping: results.filter((item) => item.availability === 'need_shopping').sort(sortMatches),
+    readyNow: sorted('ready_now'),
+    almostReady: sorted('almost_ready'),
+    needShopping: sorted('need_shopping'),
   };
 }
 

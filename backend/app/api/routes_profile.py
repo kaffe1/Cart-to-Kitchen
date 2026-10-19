@@ -13,7 +13,7 @@ from fastapi import (
 from sqlalchemy.orm import Session
 
 from ..images import read_image
-from ..profanity import check_review
+from ..profanity import MAX_REVIEW_HTML_LENGTH, check_review
 from ..schemas import UpdateMeInput
 from ..services import profile_service
 from .deps import get_current_user, get_db
@@ -63,7 +63,7 @@ def history(db: Session = Depends(get_db), user=Depends(get_current_user)):
 @router.put("/history/{entry_id}/review")
 async def set_review(
     entry_id: int,
-    text: str = Form(min_length=1, max_length=2000),
+    text: str = Form(min_length=1, max_length=MAX_REVIEW_HTML_LENGTH),
     image: UploadFile | None = File(default=None),
     db: Session = Depends(get_db),
     user=Depends(get_current_user),

@@ -1,5 +1,5 @@
 import { PointerLockControls } from '@react-three/drei';
-import { Suspense, type ComponentRef, type RefObject } from 'react';
+import { Suspense, type ComponentRef, type Ref } from 'react';
 import { formatSek } from '@/shared/utils/format';
 import type { Ingredient } from '../../model/store.types';
 import { FirstPersonController } from './controls/FirstPersonController';
@@ -28,9 +28,9 @@ interface MarketSceneProps {
   onFocusChange: (ingredientId: string | null) => void;
   onExplorationStart: () => void;
   onExplorationEnd: () => void;
-  controlsRef: RefObject<LockControls | null>;
+  controlsRef: Ref<LockControls>;
   flights: readonly CartFlight[];
-  onFlightComplete: (token: number) => void;
+  onFlightComplete: (token: string) => void;
 }
 
 export function MarketScene({

@@ -194,6 +194,24 @@ def test_mealdb_alias_queries_score_distinct_app_ingredients_once(monkeypatch):
     assert candidates[0].hit_ingredient_ids == frozenset({"chicken-breast", "rice"})
 
 
+def test_mealdb_malformed_id_is_a_missing_meal(monkeypatch):
+    # TheMealDB answers non-numeric IDs with a string instead of a list.
+    monkeypatch.setattr(mealdb, "_get", lambda *_: {"meals": "Invalid ID"})
+    assert mealdb.detail("does-not-exist") is None
+    monkeypatch.setattr(mealdb, "_get", lambda *_: {"meals": None})
+    assert mealdb.detail("99999999") is None
+
+
+def test_session_probe_reports_signed_out_without_an_error(client):
+    assert client.get("/api/v1/auth/me").json() == {"user": None}
+    client.cookies.set(get_settings().session_cookie, "not-a-token")
+    response = client.get("/api/v1/auth/me")
+    assert response.status_code == 200 and response.json() == {"user": None}
+    assert client.get("/api/v1/shopping-sessions/active").status_code == 401
+    assert client.post("/api/v1/auth/guest").status_code == 200
+    assert client.get("/api/v1/auth/me").json()["user"]["mode"] == "guest"
+
+
 def test_only_30_pantry_and_80_store_items_are_supported(client, monkeypatch):
     import re
     from pathlib import Path
