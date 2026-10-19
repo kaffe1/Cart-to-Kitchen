@@ -19,7 +19,7 @@ consume responses without a mapping layer.
 | POST | `/api/v1/auth/login` | Sign in, issues a session token |
 | POST | `/api/v1/auth/guest` | Anonymous account for the frontend guest mode |
 | POST | `/api/v1/auth/logout` | Clear the session cookie |
-| GET | `/api/v1/auth/me` | Current user (requires auth) |
+| GET | `/api/v1/auth/me` | Current user, or `{ "user": null }` when signed out |
 | GET | `/api/v1/ingredients` | Strict catalogue: 80 sellable items + exactly 30 unlimited default pantry items |
 | GET | `/api/v1/shopping-sessions/active` | Wallet + cart + kitchen inventory snapshot (requires auth) |
 | PUT | `/api/v1/shopping-sessions/{id}/items/{ingredientId}` | Set cart quantity, 0 removes (requires auth) |

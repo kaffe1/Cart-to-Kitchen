@@ -11,7 +11,7 @@ type MeDto = {
 };
 
 type MeResponse = {
-  user: MeDto;
+  user: MeDto | null;
 };
 
 const toProfile = (me: MeDto, history: CookedRecipe[] = []): Profile => ({
@@ -43,8 +43,9 @@ const toCookedRecipe = (history: HistoryDto): CookedRecipe => ({
 const newestFirst = (a: CookedRecipe, b: CookedRecipe) =>
   b.cookedAt.localeCompare(a.cookedAt);
 
-export const getProfile = async (): Promise<Profile> => {
+export const getProfile = async (): Promise<Profile | null> => {
   const resp = await req<MeResponse>("/auth/me");
+  if (!resp.user) return null;
   const basicProfile = toProfile(resp.user);
   if (basicProfile.mode === "guest") return basicProfile;
   const history = await req<HistoryDto[]>("/history");

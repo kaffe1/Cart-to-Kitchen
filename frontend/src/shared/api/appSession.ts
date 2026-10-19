@@ -127,8 +127,10 @@ export function createAppSession(request: typeof requestJson = requestJson) {
     if (runtime.state.status === 'ready') return Promise.resolve();
     return identity(async () => {
       try {
-        return (await request<{ user: AppUser }>('/auth/me')).user;
+        // The server answers a signed-out visitor with `{ user: null }`.
+        return (await request<{ user: AppUser | null }>('/auth/me')).user;
       } catch (error) {
+        // Older API deployments still signal "signed out" with a 401.
         if (error instanceof ApiError && error.status === 401) return null;
         throw error;
       }

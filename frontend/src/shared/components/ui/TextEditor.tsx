@@ -16,6 +16,7 @@ export function TextEditor({ initialHtml = "", onChange }: TextEditorProps) {
     editorProps: {
       attributes: {
         class: "min-h-24 rounded-md border px-3 py-2",
+        "aria-label": "Review text",
       },
     },
   });

@@ -136,7 +136,7 @@ test(
     const accountTrip = reloaded.getSnapshot().shopping.id;
     await reloaded.logout();
     assert.equal(reloaded.getSnapshot().shopping, null);
-    await assert.rejects(requestJson('/auth/me'), { status: 401 });
+    assert.deepEqual(await requestJson('/auth/me'), { user: null });
     await assert.rejects(
       reloaded.login({ email: input.email, password: 'wrong-password' }),
       { status: 401, code: 'invalid_credentials' },
