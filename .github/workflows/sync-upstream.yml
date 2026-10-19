@@ -47,7 +47,7 @@ jobs:
           install -m 600 /dev/null key
           echo "$KEY" > key
           ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          rsync -az --delete -e "ssh -i key" --exclude '.venv' --exclude '__pycache__' --exclude '.pytest_cache' --exclude 'postman' backend/ "$DEPLOY_USER@$DEPLOY_HOST:/opt/cart-to-kitchen/"
+          rsync -az --delete -e "ssh -i key" --exclude '.venv' --exclude '__pycache__' --exclude '.pytest_cache' --exclude 'postman' --exclude '.env' --exclude 'compose.override.yaml' backend/ "$DEPLOY_USER@$DEPLOY_HOST:/opt/cart-to-kitchen/"
           ssh -i key "$DEPLOY_USER@$DEPLOY_HOST" "cd /opt/cart-to-kitchen && docker-compose up -d --build" 
         # DEPLOY_HOST / DEPLOY_USER come from repo secrets via env passthrough
         # (rsync/ssh read them from the environment in the runner)
