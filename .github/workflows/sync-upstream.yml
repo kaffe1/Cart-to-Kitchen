@@ -43,6 +43,7 @@ jobs:
         env:
           KEY: ${{ secrets.DEPLOY_KEY }}
         run: |
+          mkdir -p ~/.ssh
           install -m 600 /dev/null key
           echo "$KEY" > key
           ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
