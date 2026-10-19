@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
-import { Profile } from "../../model/profile.types";
+import type { Profile } from "../../model/profile.types";
 
 import {
   Avatar,
@@ -18,7 +18,7 @@ import {
 } from "@/shared/components/ui/avatar";
 
 type ProfilePanelProps = {
-  profile: Profile
+  profile: Profile;
   onDisplayNameChange: () => void;
   onAvatarChange: () => void;
   onPasswordChange: () => void;
