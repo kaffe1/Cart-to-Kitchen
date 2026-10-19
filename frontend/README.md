@@ -92,8 +92,11 @@ npm run build
 
 The generated static site is written to `dist/`. Production hosting must either
 proxy `/api/v1` to the backend or set `VITE_API_BASE_URL` at build time. The Vite
-development proxy is not included in the production bundle. No public frontend
-deployment URL is currently documented.
+development proxy is not included in the production bundle.
+
+The public frontend is deployed at <https://cart-to-kitchen.vercel.app/>. Its
+same-origin `/api/v1` route proxies requests to the deployed FastAPI service, so
+authenticated requests and cookies do not depend on mixed-content browser calls.
 
 ## Application routes
 
@@ -162,6 +165,43 @@ refreshes shopping state after checkout and cooking.
 - Calls `POST /recipes/discover` and classifies results against the current inventory and counter.
 - Restores the last discovery after a route-only detour to recipe details.
 - Ranks supported recipes before recipes containing unavailable ingredients.
+
+### Default Pantry
+
+These ingredients are always available in unlimited quantities in the kitchen.
+
+| Pantry Ingredient | Category | TheMealDB aliases | Uses |
+| --- | --- | --- | ---: |
+| 🧂 Salt | Essential Seasonings & Oils | Salt | ∞ |
+| 🌶️ Black Pepper | Essential Seasonings & Oils | Black Pepper / Pepper | ∞ |
+| 🫒 Olive Oil | Essential Seasonings & Oils | Olive Oil / Extra Virgin Olive Oil | ∞ |
+| 🛢️ Vegetable Oil | Essential Seasonings & Oils | Vegetable Oil / Oil | ∞ |
+| 💧 Water | Essential Seasonings & Oils | Water | ∞ |
+| 🍶 Vinegar | Essential Seasonings & Oils | Vinegar | ∞ |
+| 🍶 Soy Sauce | Essential Seasonings & Oils | Soy Sauce | ∞ |
+| 🌭 Mustard | Essential Seasonings & Oils | Mustard | ∞ |
+| 🍅 Ketchup | Essential Seasonings & Oils | Ketchup | ∞ |
+| 🌶️ Chilli Sauce | Essential Seasonings & Oils | Chilli Sauce | ∞ |
+| 🌿 Basil | Herbs & Spices | Basil / Basil Leaves | ∞ |
+| 🌱 Parsley | Herbs & Spices | Parsley | ∞ |
+| ☘️ Oregano | Herbs & Spices | Oregano | ∞ |
+| 🌿 Thyme | Herbs & Spices | Thyme | ∞ |
+| 🥮 Cinnamon | Herbs & Spices | Cinnamon | ∞ |
+| 🟤 Cumin | Herbs & Spices | Cumin | ∞ |
+| 🌶️ Paprika | Herbs & Spices | Paprika | ∞ |
+| 🌶️ Chilli Flakes | Herbs & Spices | Chilli Flakes / Red Pepper Flakes | ∞ |
+| 🍛 Curry Powder | Herbs & Spices | Curry Powder | ∞ |
+| 🟡 Turmeric | Herbs & Spices | Turmeric | ∞ |
+| 🌿 Ground Coriander | Herbs & Spices | Ground Coriander | ∞ |
+| 🍃 Bay Leaves | Herbs & Spices | Bay Leaf / Bay Leaves | ∞ |
+| 🧄 Garlic Granules | Herbs & Spices | Garlic Granules | ∞ |
+| 🌿 Italian Seasoning | Herbs & Spices | Italian Seasoning | ∞ |
+| 🧁 Baking Powder | Baking & Cooking Essentials | Baking Powder | ∞ |
+| 🥄 Baking Soda | Baking & Cooking Essentials | Baking Soda | ∞ |
+| 🌼 Vanilla Extract | Baking & Cooking Essentials | Vanilla Extract | ∞ |
+| 🌽 Cornstarch | Baking & Cooking Essentials | Cornstarch / Cornflour | ∞ |
+| 🐔 Chicken Stock | Baking & Cooking Essentials | Chicken Stock | ∞ |
+| 🥬 Vegetable Stock Cube | Baking & Cooking Essentials | Vegetable Stock Cube | ∞ |
 
 ### Cooking
 

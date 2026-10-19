@@ -232,7 +232,12 @@ a named volume. This satisfies local container execution and an additional
 database service. The published API port is intentionally bound to loopback for
 development.
 
-A public Docker-hosted backend URL is not currently documented. For production:
+The same API and PostgreSQL Compose stack is deployed on a public host. The
+deployed health check is <http://159.195.240.39:8000/healthz>, and the Vercel
+frontend at <https://cart-to-kitchen.vercel.app/> reaches the API through its
+same-origin `/api/v1` proxy.
+
+For production hardening:
 
 - Publish the API behind HTTPS and a reverse proxy.
 - Remove the loopback-only port binding when appropriate for the host.
