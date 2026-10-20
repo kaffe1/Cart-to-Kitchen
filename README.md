@@ -11,11 +11,11 @@ This repository is the DH2643 Group 5 project.
 ## Team members and responsibilities
 
 
-| Team member | Role | Primary contributions |
+| Team member | Area | Primary contributions |
 | --- | --- | --- |
-| **Jintong Jiang** | Store/Kitchen and integration lead | Established the frontend skeleton and design system; developed the 2D/3D store, first-person navigation, ingredient models, store interactions, cart animation, and Store/backend integration; implemented the drag-and-drop Kitchen and connected the Kitchen, recipe discovery, cooking, and finished-dish flows; contributed profile styling and refactoring. |
-| **Emma Lindblom** | Profile and testing lead | Developed the Profile experience, including reusable dialogs, account settings, history, avatar upload, review workflows, TipTap rich-text editing, backend integration, validation, profanity handling, and error feedback; set up Cypress and added component tests for Profile and shared interactions; fixed review persistence and formatted HTML rendering issues. |
-| **Lexuan Zhang** | Backend lead | Implemented the FastAPI backend and its core server-side functionality, including persistence and API support for the frontend flows; maintained backend architecture documentation and synchronized the architecture diagrams with the Kitchen and recipe-discovery implementation. |
+| **Jintong Jiang** | Store/Kitchen and integration | Established the frontend skeleton and design system; developed the 2D/3D store, first-person navigation, ingredient models, store interactions, cart animation, and Store/backend integration; implemented the drag-and-drop Kitchen and connected the Kitchen, recipe discovery, cooking, and finished-dish flows; contributed profile styling and refactoring. |
+| **Emma Lindblom** | Profile and testing | Developed the Profile experience including; reusable dialogs, account settings, history, avatar upload, and review with TipTap rich-text editing. Also implemented profile frontend to backend integration, validation, and error feedback. Finally set up Cypress and added the majority of component tests across frontend. |
+| **Lexuan Zhang** | Backend | Implemented the FastAPI backend and its core server-side functionality, including persistence and API support for the frontend flows; maintained backend architecture documentation and synchronized the architecture diagrams with the Kitchen and recipe-discovery implementation. |
 
 ## Project status
 
@@ -217,10 +217,10 @@ npm run test:kitchen
 npm run test:api
 ```
 
-The current Cypress component suite contains nine specs and 34 tests covering
-the kitchen/cooking journey, responsive layouts, drag-and-drop behaviour,
-profile panels and dialogs, retry behaviour, StepLyrics, and the store ingredient
-card.
+The current Cypress component suite contains 15 specs and 53 tests covering
+the kitchen components, responsive layouts, drag-and-drop behaviour,
+profile panels and dialogs, retry behaviour, StepLyrics, and ingredient
+card. Components test can also be visually executed with `npx cypress open`
 
 The real HTTP integration test creates accounts, carts, and purchases. Run it
 only against a disposable local database:
